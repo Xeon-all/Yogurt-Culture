@@ -11,5 +11,9 @@
       <ExcelPath>UpgradeData.xlsx</ExcelPath><JsonPath>UpgradeData.json</JsonPath>
       <WorksheetName>Sheet1</WorksheetName><ClassName>UpgradeData</ClassName>
     </ExcelXmlConfig>
+    <ExcelXmlConfig>
+      <ExcelPath>ToppingData.xlsx</ExcelPath><JsonPath>ToppingData.json</JsonPath>
+      <WorksheetName>Sheet1</WorksheetName><ClassName>ToppingData</ClassName>
+    </ExcelXmlConfig>
   </ExcelXmlConfigs>
 </ExcelXmlConfiguration>

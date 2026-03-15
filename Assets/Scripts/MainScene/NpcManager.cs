@@ -194,6 +194,25 @@ public class NpcManager : Singleton<NpcManager>
             }
         }
     }
+    
+    /// <summary>
+    /// 清除所有NPC - 用于重置游戏
+    /// </summary>
+    public void ClearAllNpcs()
+    {
+        // 回收所有活跃NPC
+        foreach (GameObject npc in activeNpcs)
+        {
+            if (npc != null)
+            {
+                ObjectPool.Instance.PushObject(npc);
+            }
+        }
+        activeNpcs.Clear();
+        
+        // 清空队列
+        queuedNPC.Clear();
+    }
     private void RecycleOffScreenNpcs()
     {
         EnsureCamera();

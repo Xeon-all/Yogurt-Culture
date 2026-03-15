@@ -24,13 +24,28 @@ public class Ingredient : MonoBehaviour
     protected ProgressController owner;
     protected Slider slider;
 
+    /// <summary>
+    /// 制作过程数据（实时记录操作数据）
+    /// </summary>
+    protected YogurtProcessData processData;
+
     protected bool IsInitialized => owner != null && slider != null;
 
     public virtual void Initialize(ProgressController ownerController, Slider attachedSlider)
     {
         owner = ownerController;
         slider = attachedSlider != null ? attachedSlider : GetComponent<Slider>();
-        
+
+        // 初始化制作过程数据
+        if (processData == null)
+        {
+            processData = new YogurtProcessData();
+        }
+        else
+        {
+            processData.Reset();
+        }
+
         ResetOperation();
 
         // 初始化时可以触发一次口味变更事件，供 UI 绑定或逻辑读取初始值
@@ -89,6 +104,17 @@ public class Ingredient : MonoBehaviour
             slider.value = 0f;
         }
         progressPercent = 0f;
+
+        // 重置制作过程数据
+        processData?.Reset();
+    }
+
+    /// <summary>
+    /// 获取制作过程数据（用于外部记录操作）
+    /// </summary>
+    public YogurtProcessData GetProcessData()
+    {
+        return processData;
     }
 
     protected void CompleteOperation()

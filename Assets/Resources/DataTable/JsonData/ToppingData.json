@@ -1,0 +1,14 @@
+﻿[
+  {
+    "ID": "honey",
+    "ExFlavor": 1,
+    "capability": 20,
+    "Tags": ""
+  },
+  {
+    "ID": "oats",
+    "ExFlavor": 2,
+    "capability": 10,
+    "Tags": "crispy,cereal"
+  }
+]

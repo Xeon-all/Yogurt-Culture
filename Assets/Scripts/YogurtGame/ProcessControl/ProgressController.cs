@@ -20,6 +20,13 @@ public class ProgressController : Singleton<ProgressController>
     /// ProgressController 会在自身 Awake 时订阅此事件并决定是否真正启动进度（解耦调用方与实现）。
     /// </summary>
     public static System.Action RequestStartProgress;
+
+    /// <summary>
+    /// 静态事件：当进度完成时触发，参数为完成操作的 Ingredient 实例。
+    /// 供外部（如 IngredientController）订阅以接收进度完成通知。
+    /// </summary>
+    public static System.Action<Ingredient> OnProgressCompleted;
+
     /// <summary>
     /// 配料实例创建完成后的回调，用于加载额外效应
     /// </summary>
@@ -355,12 +362,21 @@ public class ProgressController : Singleton<ProgressController>
         {
             GameObject yogurtPrefab = Instantiate(currentYogurtProgress.prefab, spawnPoint ?? sliderContainer);
             yogurtPrefab.transform.localPosition = Vector3.zero;
-            YogurtProduct shopItem = yogurtPrefab.GetComponent<YogurtProduct>();
-            if (shopItem != null)
+            YogurtData yogurtData = yogurtPrefab.GetComponent<YogurtData>();
+            if (yogurtData != null)
             {
-                shopItem.SetIngredients(new List<Ingredient>(completedIngredients));
-                // 将当前 Ingredient 的 flavor 写入生成的成品
-                shopItem.SetFlavor(currentYogurtProgress != null ? currentYogurtProgress.Flavor : 0f);
+                // 从 Ingredient 获取过程数据并传递给 YogurtData
+                YogurtProcessData processData = currentYogurtProgress.GetProcessData();
+                if (processData != null)
+                {
+                    yogurtData.SetIngredientsByProcessData(processData);
+                    yogurtData.SetFlavor(processData.FlavorAccumulated);
+                }
+                else
+                {
+                    yogurtData.SetIngredients(new List<Ingredient>(completedIngredients));
+                    yogurtData.SetFlavor(currentYogurtProgress != null ? currentYogurtProgress.Flavor : 0f);
+                }
                 // Debug: 展示当前 Ingredient 的 flavor 值
                 Debug.Log($"[ProgressController] Generated product flavor: {currentYogurtProgress?.Flavor}");
             }
@@ -371,6 +387,14 @@ public class ProgressController : Singleton<ProgressController>
 
         // 清除所有当前活跃的 slider，恢复到 StartProgress 之前的状态
         ClearAllSliders();
+
+        // 触发进度完成事件（通知所有订阅者）
+        // 注意：需要在 ClearAllSliders 之前触发，因为之后 currentYogurtProgress 会被置空
+        // 这里需要传递的是 completedIngredients 中的最后一个 Ingredient
+        if (completedIngredients.Count > 0)
+        {
+            OnProgressCompleted?.Invoke(completedIngredients[completedIngredients.Count - 1]);
+        }
 
         // Debug.Log("ProgressController: 全部Slider已完成，触发 Win。");
         onFinish?.Invoke();

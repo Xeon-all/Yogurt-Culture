@@ -4,6 +4,6 @@
     "Description": "just a text",
     "Price": 100,
     "MethodName": "any",
-    "params": "1,1,1"
+    "Params": "1,1,1"
   }
 ]

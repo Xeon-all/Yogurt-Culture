@@ -70,13 +70,19 @@ public class IngredientController : MonoBehaviour
     private Collider2D ingredientCollider;
     private Bounds ingredientBounds;
     private bool isRestrictingCursor = false;
-    
+
     // 进度完成回调
     private System.Action onProgressComplete;
-    
+
     // Topping管理
     private List<Topping> toppings = new List<Topping>();
     private bool toppingsLoaded = false;
+
+    // 状态机
+    private IngredientStateMachine stateMachine;
+
+    // 关联的 Ingredient 组件（用于记录操作数据）
+    private Ingredient ingredient;
 
     private void Start()
     {
@@ -111,6 +117,67 @@ public class IngredientController : MonoBehaviour
         if (toolStickController == null)
         {
             // Debug.LogWarning("IngredientController: 未找到 StickController，工具交互功能可能无法正常工作。");
+        }
+
+        // 初始化状态机
+        stateMachine = new IngredientStateMachine();
+        stateMachine.OnStateChanged += OnStateMachineStateChanged;
+
+        // 获取 Ingredient 组件
+        ingredient = GetComponent<Ingredient>();
+
+        // 订阅进度完成事件（替代轮询）
+        ProgressController.OnProgressCompleted += OnProgressCompleted;
+    }
+
+    private void OnDestroy()
+    {
+        // 取消订阅事件
+        ProgressController.OnProgressCompleted -= OnProgressCompleted;
+        if (stateMachine != null)
+        {
+            stateMachine.OnStateChanged -= OnStateMachineStateChanged;
+        }
+    }
+
+    /// <summary>
+    /// 状态机状态变更回调
+    /// </summary>
+    private void OnStateMachineStateChanged(IngredientStateMachine.State oldState, IngredientStateMachine.State newState)
+    {
+        // 可以在这里处理状态变更时的逻辑
+        switch (newState)
+        {
+            case IngredientStateMachine.State.ProgressRunning:
+                // 进度开始运行
+                StartCursorRestriction();
+                break;
+            case IngredientStateMachine.State.Shrinking:
+                // 开始缩小
+                StopCursorRestriction();
+                break;
+            case IngredientStateMachine.State.Done:
+                // 流程完成
+                OnFlowComplete();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 进度完成事件回调（由 ProgressController 触发）
+    /// </summary>
+    private void OnProgressCompleted(Ingredient completedIngredient)
+    {
+        // 只处理当前正在运行的 Ingredient
+        if (completedIngredient != ingredient)
+        {
+            return;
+        }
+
+        // 只有在进度运行状态才处理
+        if (stateMachine != null && stateMachine.IsProgressRunning)
+        {
+            stateMachine.TransitionToShrinking();
         }
     }
 
@@ -177,6 +244,12 @@ public class IngredientController : MonoBehaviour
         if (toolStickController == null || !toolStickController.IsDragging())
         {
             return;
+        }
+
+        // 通过状态机控制状态转换
+        if (stateMachine != null && stateMachine.CurrentState == IngredientStateMachine.State.Idle)
+        {
+            stateMachine.TransitionToEnlarged();
         }
 
         // 触发效果
@@ -315,10 +388,10 @@ public class IngredientController : MonoBehaviour
     {
         // 显示Topping（首次放大时加载）
         ShowToppings();
-        
-        // 开始光标限制
-        StartCursorRestriction();
-        
+
+        // 触发状态机转换到进度运行状态
+        stateMachine?.TransitionToProgressRunning();
+
         // 注册进度完成回调并请求进度开始（通过事件解耦）
         RegisterProgressCompleteCallback();
         ProgressController.RequestStartProgress?.Invoke();
@@ -565,43 +638,14 @@ public class IngredientController : MonoBehaviour
     /// </summary>
     private void RegisterProgressCompleteCallback()
     {
-        // 通过协程监听进度完成
-        StartCoroutine(WaitForProgressComplete());
+        // 现在使用事件回调，不再需要协程轮询
+        // 进度完成由 ProgressController.OnProgressCompleted 事件触发
     }
 
     /// <summary>
-    /// 等待进度完成
+    /// 流程完成回调（状态机进入 Done 状态时调用）
     /// </summary>
-    private IEnumerator WaitForProgressComplete()
-    {
-        // 等待一小段时间，确保进度真的开始了
-        yield return new WaitForSeconds(0.2f);
-        
-        // 检查进度是否真的开始了
-        if (ProgressController.Instance == null || !ProgressController.Instance.IsProgressRunning)
-        {
-            // 如果进度没有开始，停止光标限制，允许用户松开鼠标时触发反向动画
-            StopCursorRestriction();
-            yield break;
-        }
-        
-        // 等待进度完成
-        while (ProgressController.Instance != null && ProgressController.Instance.IsProgressRunning)
-        {
-            yield return null;
-        }
-
-        // 再次等待一小段时间，确保进度真的完成了
-        yield return new WaitForSeconds(0.1f);
-
-        // 进度完成，执行清理
-        OnProgressComplete();
-    }
-
-    /// <summary>
-    /// 进度完成回调
-    /// </summary>
-    private void OnProgressComplete()
+    private void OnFlowComplete()
     {
         // 停止光标限制
         StopCursorRestriction();
@@ -675,6 +719,54 @@ public class IngredientController : MonoBehaviour
     public void SetBowl(GameObject bowlObject)
     {
         bowl = bowlObject;
+    }
+
+    /// <summary>
+    /// 获取状态机实例
+    /// </summary>
+    public IngredientStateMachine GetStateMachine()
+    {
+        return stateMachine;
+    }
+
+    /// <summary>
+    /// 获取当前状态
+    /// </summary>
+    public IngredientStateMachine.State GetCurrentState()
+    {
+        return stateMachine != null ? stateMachine.CurrentState : IngredientStateMachine.State.Idle;
+    }
+
+    /// <summary>
+    /// 获取关联的 Ingredient 组件
+    /// </summary>
+    public Ingredient GetIngredient()
+    {
+        return ingredient;
+    }
+
+    /// <summary>
+    /// 记录搅拌操作数据
+    /// </summary>
+    public void RecordStirOperation(float duration, float force)
+    {
+        ingredient?.GetProcessData()?.RecordStir(duration, force);
+    }
+
+    /// <summary>
+    /// 记录添加 Topping 操作
+    /// </summary>
+    public void RecordAddTopping(YogurtTag tag)
+    {
+        ingredient?.GetProcessData()?.AddTopping(tag);
+    }
+
+    /// <summary>
+    /// 记录口味变化
+    /// </summary>
+    public void RecordFlavorChange(float delta)
+    {
+        ingredient?.GetProcessData()?.AddFlavor(delta);
     }
 }
 

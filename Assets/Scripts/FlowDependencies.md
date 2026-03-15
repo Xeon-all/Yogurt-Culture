@@ -34,26 +34,114 @@
   - 订单预制体需带 `ShopItem`，并在 Inspector 中配置其 `Ingredients` 列表（模板数据）。
 
 ## 5. 进度条（Progress）添加与完成
-- **脚本**：`ProgressController`、`Ingredient` 派生脚本（如 `NormalYogurt`）
-- **依赖配置**：
-  - `ProgressController.sliderPrefabs`：所有可用 Slider 预制体，需挂 `Ingredient`。
-  - `sliderContainer`：运行时放置 Slider 的父节点。
-  - `spawnPoint`：制作完成后成品（`ShopItem`）实例化位置。未配置时默认挂在 `sliderContainer`。
-  - `Ingredient.prefab`：完成后要实例化的 `ShopItem` 预制体引用。
 
-## 6. 生产出的 ShopItem 拖拽
+### 5.1 核心脚本
+
+| 脚本 | 职责 |
+|------|------|
+| `IngredientStateMachine` | 管理 IngredientController 的制作流程状态（Idle→Enlarged→ProgressRunning→Shrinking→Done） |
+| `YogurtProcessData` | 纯数据类，实时记录制作过程中的操作数据（搅拌时长、力度、Topping、口味累加等） |
+| `Ingredient` | 基类，管理单个配料实例的进度逻辑和过程数据 |
+| `IngredientController` | 管理 Ingredient 视觉表现、动画、光标限制，由状态机驱动状态转换 |
+| `ProgressController` | 管理进度条容器、进度调度、成品生成 |
+
+### 5.2 状态机流程
+
+```
+Idle（初始）
+    ↓ 工具碰撞触发
+Enlarged（放大动画）
+    ↓ 动画完成
+ProgressRunning（进度条运行）
+    ↓ 进度完成
+Shrinking（缩小动画）
+    ↓ 动画完成
+Done（销毁，生成成品）
+```
+
+### 5.3 实时数据流
+
+```
+玩家交互（搅拌/添加Topping）
+    ↓
+IngredientController 检测交互
+    ↓
+Ingredient.GetProcessData().RecordXxx() 实时记录
+    ↓
+ProgressRunning 进度完成
+    ↓
+ProgressController.Finish()
+    ↓
+从 Ingredient 获取 YogurtProcessData
+    ↓
+YogurtData.SetIngredientsByProcessData() 生成成品数据
+    ↓
+实例化 YogurtInstance（可拖拽成品）
+```
+
+### 5.4 依赖配置
+
+- `ProgressController.sliderPrefabs`：所有可用 Slider 预制体，需挂 `Ingredient`。
+- `sliderContainer`：运行时放置 Slider 的父节点。
+- `spawnPoint`：制作完成后成品（`ShopItem`）实例化位置。未配置时默认挂在 `sliderContainer`。
+- `Ingredient.prefab`：完成后要实例化的 `ShopItem` 预制体引用。
+
+### 5.5 事件驱动（替代轮询）
+
+| 事件 | 触发时机 | 订阅者 |
+|------|---------|--------|
+| `ProgressController.RequestStartProgress` | `IngredientController` 放大动画完成后请求开始进度 | `ProgressController` 内部 |
+| `ProgressController.OnProgressCompleted(Ingredient)` | 进度完成时 | `IngredientController`（触发状态机转换到 Shrinking） |
+| `IngredientStateMachine.OnStateChanged` | 任意状态变更 | `IngredientController`（处理状态变更逻辑） |
+
+---
+
+## 6. 成品生成（YogurtData & YogurtInstance）
+
+### 6.1 核心脚本
+
+| 脚本 | 职责 |
+|------|------|
+| `YogurtData` | 成品逻辑数据（配料类型、口味值） |
+| `YogurtInstance` | 成品视觉表现 + 拖拽交互 |
+
+### 6.2 生成流程
+
+```
+ProgressController.Finish()
+    │
+    ├─→ 1. 获取 currentYogurtProgress.GetProcessData()
+    │
+    ├─→ 2. 实例化 yogurtPrefab（ShopItem）
+    │
+    ├─→ 3. YogurtData.SetIngredientsByProcessData(processData)
+    │       └─ 传递：配料类型列表、口味累加值
+    │
+    └─→ 4. 成品可拖拽交付给订单
+```
+
+### 6.3 数据传递
+
+| 源 | 目标 | 数据 |
+|----|------|------|
+| `Ingredient.processData` | `YogurtData` | 配料类型、口味值 |
+
+---
+
+## 7. 生产出的 ShopItem 拖拽
+- **脚本**：`ShopItem`
 - **脚本**：`ShopItem`
 - **依赖配置**：
   - `orderLayerName`：拖拽结束时检测的 Layer（默认 `order`）。需要在 Project Settings → Tags and Layers 中设置并赋予订单接收区域的 Collider2D。
   - ShopItem 必须带 `Collider2D`，接收区域 Collider2D 必须位于 `orderLayerName` 指定层。
 
-## 7. 订单匹配与提交通知
+## 8. 订单匹配与提交通知
 - **脚本**：`OrderManager.HandleOrderSubmit`, `MatchOrder`
 - **依赖配置**：
   - 订单模板 `ShopItem.Ingredients` 与玩家制作 `ShopItem.GetIngredients()` 按顺序一一对应（数量、`Ingredient` 类型均需一致）才能通过 `MatchOrder`。
   - 成功时 `SubmitSuccess()` 销毁当前订单实例、调用 `NpcManager.LeaveQueue()` 让队首 NPC 离队，并触发队列补位。
 
-## 8. NPC 离队
+## 9. NPC 离队
 - **脚本**：`NpcManager.LeaveQueue`, `NpcController.LeaveQueueAndResume`
 - **依赖配置**：
   - `NpcManager` 的 `queuedNPC` 会随着订单完成出队；剩余 NPC 通过 `ShiftInQueue` 以 0.2 速度向右补位 `Abs(queueStepOffset)` 距离。

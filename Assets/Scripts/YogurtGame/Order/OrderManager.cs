@@ -11,7 +11,7 @@ public class OrderManager : Singleton<OrderManager>
         public string ID;
         public GameObject OrderEntity; // Prefab reference
         public GameObject SpawnedInstance; // 实例化后的实体
-        public List<Type> IngredientTypes = new();
+        public List<YogurtTag> IngredientTags = new();
         public int Price = 10;
         public int FlavorExpec;
     }
@@ -41,7 +41,7 @@ public class OrderManager : Singleton<OrderManager>
         newOrder.OrderEntity = orderPrefabs[randomIndex];
         newOrder.ID = newOrder.OrderEntity.name;
 
-        newOrder.IngredientTypes = OrderDemands();
+        newOrder.IngredientTags = OrderDemands();
         // 为订单分配随机 FlavorExpec（若提供 NPC 则使用 NPC 中的上下限）
         if (sourceNpc != null)
         {
@@ -73,9 +73,10 @@ public class OrderManager : Singleton<OrderManager>
         // Random.Range for ints is min (inclusive) to max (exclusive), so add +1 to include max
         order.FlavorExpec = UnityEngine.Random.Range(min, max + 1);
     }
-    private List<Type> OrderDemands()
+    private List<YogurtTag> OrderDemands()
     {
-        return new List<Type> { typeof(NormalYogurt) };
+        // TODO: 替换为实际的 YogurtTag
+        return new List<YogurtTag> { YogurtTag.None };
     }
     public void LoadNextOrder()
     { 
@@ -94,7 +95,7 @@ public class OrderManager : Singleton<OrderManager>
             currentOrder = null;
         }
     }
-    public void HandleOrderSubmit(YogurtProduct submitOrder)
+    public void HandleOrderSubmit(YogurtData submitOrder)
     {
         if (submitOrder == null)
         {
@@ -114,26 +115,24 @@ public class OrderManager : Singleton<OrderManager>
             SubmitFail();
         }
     }
-    public bool MatchOrder(YogurtProduct submitOrder)
+    public bool MatchOrder(YogurtData submitOrder)
     {
         if (currentOrder == null || submitOrder == null)
         {
             return false;
         }
 
-        List<Type> targetTypes = currentOrder.IngredientTypes ?? new List<Type>();
-        List<Type> submittedIngredients = submitOrder.GetIngredientTypes() ?? new List<Type>();
+        List<YogurtTag> targetTags = currentOrder.IngredientTags ?? new List<YogurtTag>();
+        List<YogurtTag> submittedTags = submitOrder.GetIngredientTags() ?? new List<YogurtTag>();
 
-        if (targetTypes.Count != submittedIngredients.Count)
+        if (targetTags.Count != submittedTags.Count)
         {
             return false;
         }
 
-        for (int i = 0; i < targetTypes.Count; i++)
+        for (int i = 0; i < targetTags.Count; i++)
         {
-            // Ingredient actual = submittedIngredients[i];
-
-            if (targetTypes[i] != submittedIngredients[i])
+            if (targetTags[i] != submittedTags[i])
             {
                 return false;
             }

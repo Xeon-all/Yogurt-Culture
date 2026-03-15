@@ -1,0 +1,157 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Excel2Unity;
+
+/// <summary>
+/// YogurtGameBoard：负责加载和管理经营过程中会用到的数据表缓存。
+/// 策略：Awake 时从 Resources/DataTable/JsonData 读取 JSON，并用自动生成的表类反序列化后缓存。
+/// </summary>
+public class YogurtGameBoard : MonoBehaviour
+{
+    public static YogurtGameBoard Instance { get; private set; }
+
+    [Header("Data")]
+    [Tooltip("JsonData 加载路径（相对 Resources）。默认：DataTable/JsonData")]
+    [SerializeField] private string jsonDataResourcesPath = "DataTable/JsonData";
+
+    // tableShortName -> (id -> row)
+    private readonly Dictionary<string, Dictionary<string, TableDataBase>> _cache =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    // ToppingTags: id -> List<YogurtTag>
+    private readonly Dictionary<string, List<YogurtTag>> _toppingTagsCache =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        LoadAll();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    /// <summary>
+    /// 根据表名（支持简写，如 Topping）与 ID 获取一条记录。
+    /// </summary>
+    public T Get<T>(string tableName, string id) where T : TableDataBase
+    {
+        if (string.IsNullOrWhiteSpace(tableName) || string.IsNullOrWhiteSpace(id)) return null;
+
+        string shortName = ToShortTableName(tableName);
+        if (!_cache.TryGetValue(shortName, out var table)) return null;
+        if (!table.TryGetValue(id, out var row)) return null;
+        return row as T;
+    }
+
+    /// <summary>
+    /// 获取 Topping 的标签列表（自动解析 Tags 字段）
+    /// </summary>
+    public List<YogurtTag> GetToppingTags(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return null;
+        return _toppingTagsCache.TryGetValue(id, out var tags) ? tags : null;
+    }
+
+    /// <summary>
+    /// 是否存在某张表（支持简写）。
+    /// </summary>
+    public bool HasTable(string tableName)
+    {
+        if (string.IsNullOrWhiteSpace(tableName)) return false;
+        return _cache.ContainsKey(ToShortTableName(tableName));
+    }
+
+    private void LoadAll()
+    {
+        _cache.Clear();
+        _toppingTagsCache.Clear();
+
+        // 加载各表数据
+        LoadTable<ToppingData>("Topping", ParseToppingTags);
+        LoadTable<UpgradeData>("Upgrade");
+    }
+
+    /// <summary>
+    /// 加载单张表数据
+    /// </summary>
+    private void LoadTable<T>(string shortTableName, Action<T> onRowLoaded = null) where T : TableDataBase
+    {
+        string jsonAssetName = $"{shortTableName}Data";
+        string resPath = $"{jsonDataResourcesPath}/{jsonAssetName}";
+        TextAsset json = Resources.Load<TextAsset>(resPath);
+        if (json == null) return;
+
+        var rows = JsonArrayUtility.FromJsonArray<T>(json.text);
+        if (rows == null) return;
+
+        var map = new Dictionary<string, TableDataBase>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in rows)
+        {
+            if (row == null) continue;
+            if (string.IsNullOrWhiteSpace(row.ID)) continue;
+            map[row.ID] = row;
+
+            onRowLoaded?.Invoke(row);
+        }
+
+        _cache[shortTableName] = map;
+    }
+
+    /// <summary>
+    /// 解析 ToppingData 的 Tags 字段
+    /// </summary>
+    private void ParseToppingTags(ToppingData topping)
+    {
+        if (topping == null || string.IsNullOrWhiteSpace(topping.Tags)) return;
+
+        var tags = YogurtData.ParseTags(topping.Tags);
+        _toppingTagsCache[topping.ID] = tags;
+    }
+
+    private static string ToShortTableName(string tableName)
+    {
+        if (string.IsNullOrEmpty(tableName)) return tableName;
+        if (tableName.EndsWith("Data", StringComparison.OrdinalIgnoreCase))
+        {
+            return tableName.Substring(0, tableName.Length - 4);
+        }
+        return tableName;
+    }
+
+    private static class JsonArrayUtility
+    {
+        [Serializable]
+        private class Wrapper<T>
+        {
+            public T[] Items;
+        }
+
+        public static T[] FromJsonArray<T>(string jsonArray)
+        {
+            if (string.IsNullOrWhiteSpace(jsonArray)) return null;
+
+            string wrapped = "{\"Items\":" + jsonArray + "}";
+            try
+            {
+                return JsonUtility.FromJson<Wrapper<T>>(wrapped)?.Items;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+}
+

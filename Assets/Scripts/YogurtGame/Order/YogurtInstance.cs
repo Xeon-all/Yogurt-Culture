@@ -1,34 +1,34 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// 将本脚本挂在任意带 Collider2D 的物体上，即可用鼠标拖拽并在场景中放置。
-/// 适用于2D场景（正交摄像机）。
+/// 酸奶产品的画面表现部分（拖拽相关）。
+/// 挂载在任意带 Collider2D 的物体上实现鼠标拖拽。
+/// 适用于 2D 场景（正交摄像机）。
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
-public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [Header("所含配料")]
-    [SerializeField] private List<Type> ingredientTypes = new();
-
     [Header("拖拽设置")]
     [Tooltip("拖拽时物体与鼠标之间是否保持初始偏移（true：更自然；false：中心跟随鼠标）。")]
     [SerializeField] private bool keepOffsetFromMouse = true;
 
-    [Tooltip("是否在拖拽过程中锁定Z轴位置。")]
+    [Tooltip("是否在拖拽过程中锁定 Z 轴位置。")]
     [SerializeField] private bool lockZAxis = true;
 
     [Header("拖动范围限制")]
     [Tooltip("限制拖动范围的 GameObject（留空则自动查找 tag 为 Gameboard 的物体）")]
     [SerializeField] private GameObject dragBoundsCollider;
-    private Bounds bounds;
-    private bool hasBounds = false;
 
+    /// <summary>
+    /// 垃圾桶的 Layer 名称（需在 Project Settings > Tags and Layers 中配置）。
+    /// </summary>
     [Header("接手检测")]
     [Tooltip("拖拽结束后判定的 Layer 名称（需在 Project Settings > Tags and Layers 中配置）。")]
     [SerializeField] private string orderLayerName = "order";
+
+    [Tooltip("垃圾桶的 Tag 名称")]
+    [SerializeField] private string trashCanTag = "TrashCan";
 
     private Camera mainCamera;
     private bool isDragging;
@@ -36,30 +36,29 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     private float objectZ;
     private int orderLayerMask;
 
+    private Bounds bounds;
+    private bool hasBounds = false;
+
+    private YogurtData yogurtData;
+
     private void Awake()
     {
         mainCamera = Camera.main;
         objectZ = transform.position.z;
         orderLayerMask = LayerMask.GetMask(orderLayerName);
-        
-        // 确保 EventSystem 存在
+
         EnsureEventSystem();
-        
-        // 确保 Camera 有 Physics2DRaycaster
         EnsurePhysics2DRaycaster();
-        
-        // 初始化拖动范围 bounds
         InitializeDragBounds();
-        
+
+        yogurtData = GetComponent<YogurtData>();
+
         if (orderLayerMask == 0)
         {
             // Debug.LogWarning($"ShopItem: Layer '{orderLayerName}' 未找到，将无法触发订单检测。");
         }
     }
-    
-    /// <summary>
-    /// 确保场景中有 EventSystem
-    /// </summary>
+
     private void EnsureEventSystem()
     {
         if (EventSystem.current == null)
@@ -69,10 +68,7 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             eventSystemObj.AddComponent<StandaloneInputModule>();
         }
     }
-    
-    /// <summary>
-    /// 确保 Camera 有 Physics2DRaycaster（用于2D拖拽检测）
-    /// </summary>
+
     private void EnsurePhysics2DRaycaster()
     {
         if (mainCamera != null && mainCamera.GetComponent<Physics2DRaycaster>() == null)
@@ -81,29 +77,23 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         }
     }
 
-    /// <summary>
-    /// 初始化拖动范围 bounds
-    /// </summary>
     private void InitializeDragBounds()
     {
         GameObject boundsObject = null;
-        
-        // 优先使用手动设置的 dragBoundsCollider
+
         if (dragBoundsCollider != null)
         {
             boundsObject = dragBoundsCollider;
         }
         else
         {
-            // 自动查找 tag 为 Gameboard 的物体
             GameObject gameboard = GameObject.FindGameObjectWithTag("Gameboard");
             if (gameboard != null)
             {
                 boundsObject = gameboard;
             }
         }
-        
-        // 获取 BoxCollider2D 的 bounds
+
         if (boundsObject != null)
         {
             BoxCollider2D boxCollider = boundsObject.GetComponent<BoxCollider2D>();
@@ -156,7 +146,6 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             targetPos.z = objectZ;
         }
 
-        // 如果设置了拖动范围限制，将位置限制在范围内
         if (hasBounds)
         {
             targetPos = ClampPositionToBounds(targetPos);
@@ -165,32 +154,26 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         transform.position = targetPos;
     }
 
-    /// <summary>
-    /// 将位置限制在拖动范围内
-    /// </summary>
     private Vector3 ClampPositionToBounds(Vector3 position)
     {
         Collider2D selfCollider = GetComponent<Collider2D>();
-        
+
         if (selfCollider != null)
         {
-            // 考虑物体自身 Collider 的大小，确保整个物体都在范围内
             Bounds selfBounds = selfCollider.bounds;
             float halfWidth = selfBounds.extents.x;
             float halfHeight = selfBounds.extents.y;
-            
-            // 限制位置，确保物体的 bounds 完全在拖动范围内
+
             float clampedX = Mathf.Clamp(position.x, bounds.min.x + halfWidth, bounds.max.x - halfWidth);
             float clampedY = Mathf.Clamp(position.y, bounds.min.y + halfHeight, bounds.max.y - halfHeight);
-            
+
             return new Vector3(clampedX, clampedY, position.z);
         }
         else
         {
-            // 如果没有 Collider，只限制中心点
             float clampedX = Mathf.Clamp(position.x, bounds.min.x, bounds.max.x);
             float clampedY = Mathf.Clamp(position.y, bounds.min.y, bounds.max.y);
-            
+
             return new Vector3(clampedX, clampedY, position.z);
         }
     }
@@ -205,22 +188,15 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         isDragging = false;
         HandOver();
     }
-    
-    /// <summary>
-    /// 将屏幕坐标转换为世界坐标
-    /// </summary>
+
     private Vector3 GetWorldPosition(Vector2 screenPosition)
     {
         Vector3 mouseScreen = screenPosition;
-        // 对于2D正交相机，使用物体当前z或相机到物体的z距离
         float z = lockZAxis ? Mathf.Abs(mainCamera.transform.position.z - objectZ) : Mathf.Abs(mainCamera.transform.position.z);
         mouseScreen.z = z;
         return mainCamera.ScreenToWorldPoint(mouseScreen);
     }
 
-    /// <summary>
-    /// 拖拽结束后检查是否与目标区域重叠
-    /// </summary>
     private void HandOver()
     {
         Collider2D selfCollider = GetComponent<Collider2D>();
@@ -229,6 +205,13 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             return;
         }
 
+        // 先检测垃圾桶
+        if (CheckAndDestroyAtTrashCan())
+        {
+            return;
+        }
+
+        // 再检测订单
         if (orderLayerMask == 0)
         {
             return;
@@ -244,28 +227,42 @@ public class YogurtProduct : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         int hitCount = selfCollider.OverlapCollider(filter, results);
         if (hitCount > 0)
         {
-            OrderManager.Instance?.HandleOrderSubmit(this);
-        }
-    }
-    public void SetIngredients(IList<Ingredient> newIngredients)
-    {
-        ingredientTypes = new List<Type>();
-        foreach (Ingredient ingredient in newIngredients)
-        {
-            if (ingredient != null)
+            // 传递 YogurtData 而非 YogurtInstance
+            if (yogurtData != null)
             {
-                ingredientTypes.Add(ingredient.GetType());
+                OrderManager.Instance?.HandleOrderSubmit(yogurtData);
             }
         }
     }
 
-    public List<Type> GetIngredientTypes()
+    /// <summary>
+    /// 检测是否与垃圾桶重合，如果是则销毁实例。
+    /// </summary>
+    /// <returns>如果成功销毁返回 true，否则返回 false</returns>
+    private bool CheckAndDestroyAtTrashCan()
     {
-        return ingredientTypes;
+        GameObject[] trashCans = GameObject.FindGameObjectsWithTag(trashCanTag);
+        if (trashCans == null || trashCans.Length == 0)
+        {
+            return false;
+        }
+
+        Collider2D selfCollider = GetComponent<Collider2D>();
+        if (selfCollider == null)
+        {
+            return false;
+        }
+
+        foreach (GameObject trashCanObj in trashCans)
+        {
+            TrashCan trashCan = trashCanObj.GetComponent<TrashCan>();
+            if (trashCan != null && trashCan.CheckOverlapWithTrashCan(gameObject))
+            {
+                trashCan.TryDestroyYogurt(gameObject);
+                return true;
+            }
+        }
+
+        return false;
     }
-    
-    // Flavor (口味) 存储与访问
-    private float flavor = 0f;
-    public void SetFlavor(float value) { flavor = value; }
-    public float GetFlavor() { return flavor; }
 }
