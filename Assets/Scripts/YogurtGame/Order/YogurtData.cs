@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -24,6 +24,8 @@ public enum YogurtTag
 
     // ========== 成品特性 ==========
     // 成品酸奶可能具有的特殊属性
+    crispy = 1,
+    cereal = 2,
 }
 
 /// <summary>
@@ -273,7 +275,7 @@ public class YogurtData : MonoBehaviour
     private static string GetEnumFilePath()
     {
         // 假设 YogurtData.cs 在 Assets/Scripts/YogurtGame/ 目录下
-        return Path.Combine(Application.dataPath, "Scripts", "YogurtGame", "YogurtData.cs");
+        return Path.Combine(Application.dataPath, "Scripts", "YogurtGame", "Order", "YogurtData.cs");
     }
 
     /// <summary>

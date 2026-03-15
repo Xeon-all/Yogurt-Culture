@@ -12,6 +12,7 @@ namespace YogurtCulture.GameLoop
             base.OnPhaseEnter(data);
             
             ui = GameLoopManager.Instance.GetPreparationUI();
+            ui.GetComponent<PreparationUI>().InitData();
             if (ui != null) ui.SetActive(true);
         }
         

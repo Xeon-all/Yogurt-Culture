@@ -73,6 +73,27 @@ public class YogurtGameBoard : MonoBehaviour
         return _cache.ContainsKey(ToShortTableName(tableName));
     }
 
+    /// <summary>
+    /// 获取整张表的所有数据
+    /// </summary>
+    public List<T> GetAll<T>(string tableName) where T : TableDataBase
+    {
+        if (string.IsNullOrWhiteSpace(tableName)) return null;
+
+        string shortName = ToShortTableName(tableName);
+        if (!_cache.TryGetValue(shortName, out var table)) return null;
+
+        var result = new List<T>();
+        foreach (var row in table.Values)
+        {
+            if (row is T typedRow)
+            {
+                result.Add(typedRow);
+            }
+        }
+        return result;
+    }
+
     private void LoadAll()
     {
         _cache.Clear();
