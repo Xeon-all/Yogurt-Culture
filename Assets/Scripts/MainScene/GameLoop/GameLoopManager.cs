@@ -24,6 +24,7 @@ namespace YogurtCulture.GameLoop
         };
         private Dictionary<GamePhase, Type> builtInPhases = new Dictionary<GamePhase, Type>
         {
+            { GamePhase.Init, typeof(InitHandler) },
             { GamePhase.Preparation, typeof(PreparationHandler) },
             { GamePhase.MorningOp, typeof(MorningOpHandler) },
             { GamePhase.NoonBreak, typeof(NoonBreakHandler) },
@@ -36,7 +37,7 @@ namespace YogurtCulture.GameLoop
         [SerializeField] private GameLoopData gameData = new();
         
         [Header("准备阶段")]
-        [SerializeField] private GameObject preparationUI;
+        [SerializeField] private List<GameObject> preparationUI;
         [Header("经营阶段")]
         [SerializeField] public GameObject npcManager;
         private int _currentPhaseIndex;
@@ -56,7 +57,7 @@ namespace YogurtCulture.GameLoop
         
         private void Start()
         {
-            TransitionTo(GamePhase.Preparation);
+            TransitionTo(GamePhase.Init);
         }
         
         private void Update()
@@ -70,7 +71,7 @@ namespace YogurtCulture.GameLoop
         /// <summary>
         /// 获取准备阶段 UI
         /// </summary>
-        public GameObject GetPreparationUI() => preparationUI;
+        public List<GameObject> GetPreparationUI() => preparationUI;
         
         /// <summary>
         /// Debug: 手动进入下一阶段
@@ -85,20 +86,25 @@ namespace YogurtCulture.GameLoop
         /// </summary>
         public void TransitionTo(GamePhase targetPhase)
         {
-            int targetIndex = System.Array.IndexOf(phaseOrder, targetPhase);
-            if (targetIndex < 0) return;
-            
-            // 退出旧阶段
-            if (_currentPhase != 0 || targetPhase != GamePhase.Preparation)
+            // 退出旧阶段（Init 为初始阶段，不执行退出）
+            if (_currentPhase != GamePhase.Init || targetPhase != GamePhase.Preparation)
             {
                 ExitCurrentPhase();
             }
-            
+
             // 切换阶段
-            _currentPhaseIndex = targetIndex;
+            if (targetPhase == GamePhase.Init)
+            {
+                _currentPhaseIndex = -1; // Init 不在 phaseOrder 中
+            }
+            else
+            {
+                _currentPhaseIndex = System.Array.IndexOf(phaseOrder, targetPhase);
+                if (_currentPhaseIndex < 0) return;
+            }
             _currentPhase = targetPhase;
             gameData.currentPhase = targetPhase;
-            
+
             // 进入新阶段
             EnterPhase(targetPhase);
         }
@@ -136,6 +142,13 @@ namespace YogurtCulture.GameLoop
         /// </summary>
         private void GetNextPhase(out GamePhase nextPhase, out int nextIndex)
         {
+            if (_currentPhase == GamePhase.Init)
+            {
+                // Init 是特殊入口阶段，下一阶段固定为 phaseOrder[0]
+                nextIndex = 0;
+                nextPhase = phaseOrder[0];
+                return;
+            }
             nextIndex = (_currentPhaseIndex + 1) % phaseOrder.Length;
             nextPhase = phaseOrder[nextIndex];
         }

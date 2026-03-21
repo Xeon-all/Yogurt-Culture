@@ -23,6 +23,10 @@ public class YogurtGameBoard : MonoBehaviour
     private readonly Dictionary<string, List<YogurtTag>> _toppingTagsCache =
         new(StringComparer.OrdinalIgnoreCase);
 
+    // Topping激活状态: id -> isActive
+    private readonly Dictionary<string, bool> _toppingActiveCache =
+        new(StringComparer.OrdinalIgnoreCase);
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -98,10 +102,14 @@ public class YogurtGameBoard : MonoBehaviour
     {
         _cache.Clear();
         _toppingTagsCache.Clear();
+        _toppingActiveCache.Clear();
 
         // 加载各表数据
         LoadTable<ToppingData>("Topping", ParseToppingTags);
         LoadTable<UpgradeData>("Upgrade");
+
+        // 初始化所有 Topping 为未激活状态
+        InitializeToppingActiveStatus();
     }
 
     /// <summary>
@@ -139,6 +147,81 @@ public class YogurtGameBoard : MonoBehaviour
 
         var tags = YogurtData.ParseTags(topping.Tags);
         _toppingTagsCache[topping.ID] = tags;
+    }
+
+    /// <summary>
+    /// 初始化所有 Topping 为未激活状态
+    /// </summary>
+    private void InitializeToppingActiveStatus()
+    {
+        if (!_cache.TryGetValue("Topping", out var table)) return;
+
+        foreach (var row in table.Values)
+        {
+            if (row is ToppingData topping && !string.IsNullOrWhiteSpace(topping.ID))
+            {
+                _toppingActiveCache[topping.ID] = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 获取 Topping 的激活状态
+    /// </summary>
+    public bool GetToppingActive(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return false;
+        return _toppingActiveCache.TryGetValue(id, out var isActive) && isActive;
+    }
+
+    /// <summary>
+    /// 设置 Topping 的激活状态
+    /// </summary>
+    public void SetToppingActive(string id, bool isActive)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return;
+        _toppingActiveCache[id] = isActive;
+    }
+
+    /// <summary>
+    /// 获取所有已激活的 Topping 数据
+    /// </summary>
+    public List<ToppingData> GetAllActiveToppings()
+    {
+        var result = new List<ToppingData>();
+
+        if (!_cache.TryGetValue("Topping", out var table)) return result;
+
+        foreach (var row in table.Values)
+        {
+            if (row is ToppingData topping)
+            {
+                if (GetToppingActive(topping.ID))
+                {
+                    result.Add(topping);
+                }
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// 获取所有 Topping 数据及其激活状态
+    /// </summary>
+    public List<ToppingData> GetAllToppings()
+    {
+        var result = new List<ToppingData>();
+
+        if (!_cache.TryGetValue("Topping", out var table)) return result;
+
+        foreach (var row in table.Values)
+        {
+            if (row is ToppingData topping)
+            {
+                result.Add(topping);
+            }
+        }
+        return result;
     }
 
     private static string ToShortTableName(string tableName)

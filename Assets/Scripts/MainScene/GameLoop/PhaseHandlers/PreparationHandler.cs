@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace YogurtCulture.GameLoop
@@ -6,21 +7,22 @@ namespace YogurtCulture.GameLoop
     {
         public override GamePhase Phase => GamePhase.Preparation;
         public override float Duration => 30f;
-        private GameObject ui;
+        private List<GameObject> uiList;
         public override void OnPhaseEnter(GameLoopData data)
         {
             base.OnPhaseEnter(data);
             
-            ui = GameLoopManager.Instance.GetPreparationUI();
-            ui.GetComponent<PreparationUI>().InitData();
-            if (ui != null) ui.SetActive(true);
+            uiList = GameLoopManager.Instance.GetPreparationUI();
+            uiList[0].GetComponent<PreparationUI>().InitData();
+            foreach(var ui in uiList)
+                if (ui != null) ui.SetActive(true);
         }
         
         public override void OnPhaseExit(GameLoopData data)
         {
             base.OnPhaseExit(data);
-            ui = GameLoopManager.Instance.GetPreparationUI();
-            if (ui != null) ui.SetActive(false);
+            uiList = GameLoopManager.Instance.GetPreparationUI();
+            if (uiList[0] != null) uiList[0].SetActive(false);
         }
     }
 }

@@ -39,8 +39,8 @@ public class PreparationUI : MonoBehaviour
     {
         _toppingList.Clear();
         
-        // 从 YogurtGameBoard 获取所有 Topping 数据
-        _toppingList.AddRange(YogurtGameBoard.Instance.GetAll<ToppingData>("Topping"));
+        // 从 YogurtGameBoard 获取所有已激活的 Topping 数据
+        _toppingList.AddRange(YogurtGameBoard.Instance.GetAllActiveToppings());
     }
 
     private void CalculatePagination()

@@ -1,11 +1,18 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using System;
 using Cinemachine;
+using YogurtCulture.GameLoop;
 
 public class CameraManager : MonoBehaviour {
     [Header("相机配置")]
     private Camera mainCamera;
     public CinemachineVirtualCamera cinemachineVirtualCamera;
+
+    [Header("Cinemachine 虚拟相机")]
+    public CinemachineVirtualCamera vcamFull;
+    public CinemachineVirtualCamera vcamFocus;
 
     [Header("视差图层列表")]
     // 这会在 Inspector 中呈现类似 Button OnClick 的列表
@@ -14,11 +21,41 @@ public class CameraManager : MonoBehaviour {
     public class ParallaxLayerData {
         public string layerName;        // 仅用于识别
         public Transform layerRoot;     // 该层级所有物件的父物体
-        [Range(0, 1)] 
-        public float floatingFactor;   // 你提到的参数：0=不动，1=完全跟随
+        [Range(0, 1)]
+        public float FactorX;   // X轴跟随因子：0=不动，1=完全跟随
+        [Range(0, 1)]
+        public float FactorY;   // Y轴跟随因子：0=不动，1=完全跟随
     }
+
     private Vector3 _cameraStartPos;
     private List<Vector3> _layerStartPositions = new List<Vector3>();
+    private List<Vector3> _layerStartScales = new List<Vector3>();
+
+    void Awake() {
+        if (vcamFull != null) vcamFull.gameObject.SetActive(true);
+        if (vcamFocus != null) vcamFocus.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 从 vcamFull 切换到 vcamFocus，使用 CinemachineBrain 的 defaultBlend，切换完成后回调
+    /// </summary>
+    /// <param name="onComplete">切换完成后的回调</param>
+    public void TransitionToFocus() {
+        if (vcamFull == null || vcamFocus == null) return;
+        vcamFull.gameObject.SetActive(false);
+        vcamFocus.gameObject.SetActive(true);
+        StartCoroutine(WaitForBlendComplete(() => GameLoopManager.Instance.TransitToNext()));
+    }
+
+    private IEnumerator WaitForBlendComplete(Action onComplete) {
+        var brain = gameObject.GetComponent<CinemachineBrain>();
+        if (brain != null) {
+            do {
+                yield return new WaitForSecondsRealtime(0.01f);
+            } while (brain.IsBlending);
+        }
+        onComplete?.Invoke();
+    }
 
     /// <summary>
     /// 设置相机跟随目标，传入null则停止跟随
@@ -63,6 +100,15 @@ public class CameraManager : MonoBehaviour {
             // X键缩小（放大视野）
             mainCamera.orthographicSize = Mathf.Min(maxZoom, mainCamera.orthographicSize + zoomSpeed * Time.deltaTime);
         }
+        if(Input.GetKey(KeyCode.Space)){
+            TransitionToFocus();
+        }
+
+        // 检测缩放结束
+        // if (!isZooming && _isZooming) {
+        //     _isZooming = false;
+        //     _initialOrthoSize = mainCamera.orthographicSize;
+        // }
     }
 
     void Start() {
@@ -74,9 +120,11 @@ public class CameraManager : MonoBehaviour {
         }
 
         _cameraStartPos = mainCamera.transform.position;
-        // 记录所有图层的初始位置
+
+        // 记录所有图层的初始位置和缩放
         foreach (var layer in layers) {
             _layerStartPositions.Add(layer.layerRoot.position);
+            _layerStartScales.Add(layer.layerRoot.localScale);
         }
     }
 
@@ -91,12 +139,15 @@ public class CameraManager : MonoBehaviour {
         for (int i = 0; i < layers.Count; i++) {
             if (layers[i].layerRoot == null) continue;
 
-            // 核心逻辑：根据 floatingFactor 计算位移
-            Vector3 targetPos = _layerStartPositions[i] + (cameraDelta * layers[i].floatingFactor);
+            // 基准位置 = 初始位置 + 相机移动偏移（XY分别应用不同的跟随因子）
+            Vector3 basePos = _layerStartPositions[i];
+            basePos.x += cameraDelta.x * layers[i].FactorX;
+            basePos.y += cameraDelta.y * layers[i].FactorY;
 
-            // 保持 Z 轴不变，只移动 X 和 Y
-            targetPos.z = _layerStartPositions[i].z;
-            layers[i].layerRoot.position = targetPos;
+            // 保持 Z 轴不变
+            basePos.z = _layerStartPositions[i].z;
+            layers[i].layerRoot.position = basePos;
         }
     }
+
 }
