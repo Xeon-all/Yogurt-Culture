@@ -51,10 +51,12 @@ public class LoadingPanelController : MonoBehaviour {
         while (!op.isDone) {
             // progress 到 0.9 代表加载完成，剩余 0.1 等待激活
             float normalized = Mathf.Clamp01(op.progress / 0.9f);
-            if (progressBar != null) progressBar.value = normalized;
+            float timeNormalized = Mathf.Clamp01((Time.realtimeSinceStartup - startTime) / minDisplaySeconds);
+            float displayValue = Mathf.Min(normalized, timeNormalized);
+            if (progressBar != null) progressBar.value = displayValue;
 
             bool loaded = op.progress >= 0.9f;
-            bool minTimeReached = (Time.realtimeSinceStartup - startTime) >= minDisplaySeconds;
+            bool minTimeReached = timeNormalized >= 1f;
             if (loaded && minTimeReached) {
                 if (progressBar != null) progressBar.value = 1f;
                 op.allowSceneActivation = true;
