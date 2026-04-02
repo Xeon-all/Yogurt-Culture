@@ -13,7 +13,7 @@ namespace YogurtCulture.GameLoop
         
         public virtual void OnPhaseEnter(GameLoopData data)
         {
-            Debug.Log($"[Handler] {Phase} Enter");
+            // Debug.Log($"[Handler] {Phase} Enter");
             phaseTimer = 0f;
         }
         
@@ -25,7 +25,7 @@ namespace YogurtCulture.GameLoop
         
         public virtual void OnPhaseExit(GameLoopData data)
         {
-            Debug.Log($"[Handler] {Phase} Exit");
+            // Debug.Log($"[Handler] {Phase} Exit");
         }
     }
 }

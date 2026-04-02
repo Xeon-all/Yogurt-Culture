@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -143,32 +143,6 @@ public class YogurtData : MonoBehaviour
     public float GetFlavor()
     {
         return flavor;
-    }
-
-    /// <summary>
-    /// 通过过程数据设置配料和口味
-    /// </summary>
-    public void SetIngredientsByProcessData(YogurtProcessData processData)
-    {
-        if (processData == null) return;
-
-        ingredientTags = processData.GetIngredientTags();
-        flavor = processData.FlavorAccumulated;
-    }
-
-    /// <summary>
-    /// 通过 YogurtProduct 设置配料和口味
-    /// </summary>
-    public void SetFromProduct(YogurtProduct product)
-    {
-        if (product == null) return;
-
-        ingredientTags.Clear();
-        foreach (var tag in product.Tags)
-        {
-            ingredientTags.Add(new TagData(tag.Tag, tag.Value));
-        }
-        flavor = product.Flavor;
     }
 
     /// <summary>

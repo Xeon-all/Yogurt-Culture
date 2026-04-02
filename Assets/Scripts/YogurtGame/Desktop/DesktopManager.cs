@@ -7,6 +7,7 @@ public class DesktopManager : Singleton<DesktopManager>
     public GameObject SpawnToppingDragger(ToppingData topping)
     {
         // Debug.Log("Searching " + PREFABFILE + topping.DraggerName);
+        if(topping == null) return null;
         var draggerPrefab = Resources.Load<GameObject>(PREFABFILE + topping.DraggerName);
 
         Vector3 mouseScreen = Input.mousePosition;

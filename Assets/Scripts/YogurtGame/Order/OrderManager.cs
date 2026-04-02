@@ -225,25 +225,56 @@ public class OrderManager : Singleton<OrderManager>
 
     /// <summary>
     /// 生成指定点数的 TagData 需求。
-    /// 每点从非 None 的 YogurtTag 中随机选一个，累加数值后合并同 Tag。
+    /// 优先从当前已激活的 Topping 支持的 Tag 中抽取，
+    /// 若池为空则回退到非 None 的 YogurtTag 枚举池。
+    /// 每点随机选一个 Tag 累加数值后合并同 Tag。
     /// </summary>
     private List<TagData> GenerateDemandTags(int totalPoints)
     {
         var result = new List<TagData>();
-        var allTags = Enum.GetValues(typeof(YogurtTag))
-                          .Cast<YogurtTag>()
-                          .Where(t => t != YogurtTag.None)
-                          .ToList();
 
-        if (allTags.Count == 0)
+        // Step 1: 从已激活 Topping 的 Tag 集合构建候选池
+        var candidatePool = new List<YogurtTag>();
+        var activeToppings = YogurtGameBoard.Instance != null
+            ? YogurtGameBoard.Instance.GetAllActiveToppings()
+            : null;
+
+        if (activeToppings != null && activeToppings.Count > 0)
         {
-            Debug.LogWarning("OrderManager: 没有可用的 YogurtTag（除 None）来生成订单需求。");
+            foreach (var topping in activeToppings)
+            {
+                var tags = YogurtGameBoard.Instance.GetToppingTags(topping.ID);
+                if (tags == null) continue;
+                foreach (var tagData in tags)
+                {
+                    if (tagData.Tag != YogurtTag.None && !candidatePool.Contains(tagData.Tag))
+                    {
+                        candidatePool.Add(tagData.Tag);
+                    }
+                }
+            }
+        }
+
+        // Step 2: 若候选池为空，回退到枚举池
+        if (candidatePool.Count == 0)
+        {
+            candidatePool.AddRange(
+                Enum.GetValues(typeof(YogurtTag))
+                    .Cast<YogurtTag>()
+                    .Where(t => t != YogurtTag.None)
+            );
+        }
+
+        if (candidatePool.Count == 0)
+        {
+            Debug.LogWarning("OrderManager: 没有可用的 Tag 来生成订单需求。");
             return result;
         }
 
+        // Step 3: 按点数随机分配
         for (int i = 0; i < totalPoints; i++)
         {
-            YogurtTag randomTag = allTags[UnityEngine.Random.Range(0, allTags.Count)];
+            YogurtTag randomTag = candidatePool[UnityEngine.Random.Range(0, candidatePool.Count)];
             int existingIdx = result.FindIndex(t => t.Tag == randomTag);
             if (existingIdx >= 0)
             {

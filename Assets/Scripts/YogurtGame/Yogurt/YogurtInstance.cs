@@ -16,13 +16,6 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     [Tooltip("是否在拖拽过程中锁定 Z 轴位置。")]
     [SerializeField] private bool lockZAxis = true;
 
-    [Header("拖动范围限制")]
-    [Tooltip("限制拖动范围的 GameObject（留空则自动查找 tag 为 Gameboard 的物体）")]
-    [SerializeField] private GameObject dragBoundsCollider;
-
-    /// <summary>
-    /// 垃圾桶的 Layer 名称（需在 Project Settings > Tags and Layers 中配置）。
-    /// </summary>
     [Header("接手检测")]
     [Tooltip("拖拽结束后判定的 Layer 名称（需在 Project Settings > Tags and Layers 中配置）。")]
     [SerializeField] private string orderLayerName = "order";
@@ -30,14 +23,28 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     [Tooltip("垃圾桶的 Tag 名称")]
     [SerializeField] private string trashCanTag = "TrashCan";
 
+    [Header("回弹动画")]
+    [Tooltip("Ease-out 动画曲线")]
+    [SerializeField] private AnimationCurve returnCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Tooltip("回弹时长（秒）")]
+    [SerializeField] private float returnDuration = 0.25f;
+
     private Camera mainCamera;
     private bool isDragging;
     private Vector3 dragOffset;
     private float objectZ;
     private int orderLayerMask;
 
-    private Bounds bounds;
-    private bool hasBounds = false;
+    /// <summary>
+    /// 出生位置（用于 EndDrag 未命中任何目标时的回弹终点）
+    /// </summary>
+    private Vector3 spawnPosition;
+
+    /// <summary>
+    /// 返回动画进行中锁定交互
+    /// </summary>
+    private bool isReturning;
 
     private YogurtData yogurtData;
 
@@ -46,16 +53,15 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         mainCamera = Camera.main;
         objectZ = transform.position.z;
         orderLayerMask = LayerMask.GetMask(orderLayerName);
+        spawnPosition = transform.position;
 
         EnsureEventSystem();
         EnsurePhysics2DRaycaster();
-        InitializeDragBounds();
 
         yogurtData = GetComponent<YogurtData>();
 
         if (orderLayerMask == 0)
         {
-            // Debug.LogWarning($"ShopItem: Layer '{orderLayerName}' 未找到，将无法触发订单检测。");
         }
     }
 
@@ -77,34 +83,6 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         }
     }
 
-    private void InitializeDragBounds()
-    {
-        GameObject boundsObject = null;
-
-        if (dragBoundsCollider != null)
-        {
-            boundsObject = dragBoundsCollider;
-        }
-        else
-        {
-            GameObject gameboard = GameObject.FindGameObjectWithTag("Gameboard");
-            if (gameboard != null)
-            {
-                boundsObject = gameboard;
-            }
-        }
-
-        if (boundsObject != null)
-        {
-            BoxCollider2D boxCollider = boundsObject.GetComponent<BoxCollider2D>();
-            if (boxCollider != null)
-            {
-                bounds = boxCollider.bounds;
-                hasBounds = true;
-            }
-        }
-    }
-
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (mainCamera == null)
@@ -119,6 +97,7 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         }
 
         isDragging = true;
+        spawnPosition = transform.position;
 
         Vector3 mouseWorld = GetWorldPosition(eventData.position);
         if (keepOffsetFromMouse)
@@ -133,7 +112,7 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (!isDragging || mainCamera == null)
+        if (!isDragging || isReturning || mainCamera == null)
         {
             return;
         }
@@ -146,47 +125,45 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
             targetPos.z = objectZ;
         }
 
-        if (hasBounds)
-        {
-            targetPos = ClampPositionToBounds(targetPos);
-        }
-
         transform.position = targetPos;
-    }
-
-    private Vector3 ClampPositionToBounds(Vector3 position)
-    {
-        Collider2D selfCollider = GetComponent<Collider2D>();
-
-        if (selfCollider != null)
-        {
-            Bounds selfBounds = selfCollider.bounds;
-            float halfWidth = selfBounds.extents.x;
-            float halfHeight = selfBounds.extents.y;
-
-            float clampedX = Mathf.Clamp(position.x, bounds.min.x + halfWidth, bounds.max.x - halfWidth);
-            float clampedY = Mathf.Clamp(position.y, bounds.min.y + halfHeight, bounds.max.y - halfHeight);
-
-            return new Vector3(clampedX, clampedY, position.z);
-        }
-        else
-        {
-            float clampedX = Mathf.Clamp(position.x, bounds.min.x, bounds.max.x);
-            float clampedY = Mathf.Clamp(position.y, bounds.min.y, bounds.max.y);
-
-            return new Vector3(clampedX, clampedY, position.z);
-        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!isDragging)
+        if (!isDragging || isReturning)
         {
             return;
         }
 
         isDragging = false;
-        HandOver();
+
+        if (!HandOver())
+        {
+            ReturnToSpawn();
+        }
+    }
+
+    private void ReturnToSpawn()
+    {
+        StartCoroutine(ReturnToSpawnCoroutine());
+    }
+
+    private System.Collections.IEnumerator ReturnToSpawnCoroutine()
+    {
+        isReturning = true;
+        Vector3 startPos = transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < returnDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = returnCurve.Evaluate(Mathf.Clamp01(elapsed / returnDuration));
+            transform.position = Vector3.Lerp(startPos, spawnPosition, t);
+            yield return null;
+        }
+
+        transform.position = spawnPosition;
+        isReturning = false;
     }
 
     private Vector3 GetWorldPosition(Vector2 screenPosition)
@@ -197,24 +174,28 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         return mainCamera.ScreenToWorldPoint(mouseScreen);
     }
 
-    private void HandOver()
+    /// <summary>
+    /// 执行垃圾桶检测和订单提交。
+    /// </summary>
+    /// <returns>若成功处理（垃圾桶或订单）返回 true；否则返回 false。</returns>
+    private bool HandOver()
     {
         Collider2D selfCollider = GetComponent<Collider2D>();
         if (selfCollider == null)
         {
-            return;
+            return false;
         }
 
         // 先检测垃圾桶
         if (CheckAndDestroyAtTrashCan())
         {
-            return;
+            return true;
         }
 
         // 再检测订单
         if (orderLayerMask == 0)
         {
-            return;
+            return false;
         }
 
         ContactFilter2D filter = new ContactFilter2D
@@ -231,7 +212,11 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
             {
                 results[0].GetComponent<OrderEntity>()?.TrySubmit(yogurtData);
             }
+            Destroy(gameObject);
+            return true;
         }
+
+        return false;
     }
 
     /// <summary>
