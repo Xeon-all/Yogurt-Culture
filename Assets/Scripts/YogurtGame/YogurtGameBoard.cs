@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Excel2Unity;
+using System.Linq;
 
 /// <summary>
 /// YogurtGameBoard：负责加载和管理经营过程中会用到的数据表缓存。
@@ -19,8 +20,8 @@ public class YogurtGameBoard : MonoBehaviour
     private readonly Dictionary<string, Dictionary<string, TableDataBase>> _cache =
         new(StringComparer.OrdinalIgnoreCase);
 
-    // ToppingTags: id -> List<YogurtTag>
-    private readonly Dictionary<string, List<YogurtTag>> _toppingTagsCache =
+    // ToppingTags: id -> List<TagData>
+    private readonly Dictionary<string, List<TagData>> _toppingTagsCache =
         new(StringComparer.OrdinalIgnoreCase);
 
     // Topping激活状态: id -> isActive
@@ -62,7 +63,7 @@ public class YogurtGameBoard : MonoBehaviour
     /// <summary>
     /// 获取 Topping 的标签列表（自动解析 Tags 字段）
     /// </summary>
-    public List<YogurtTag> GetToppingTags(string id)
+    public List<TagData> GetToppingTags(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
         return _toppingTagsCache.TryGetValue(id, out var tags) ? tags : null;
@@ -160,7 +161,7 @@ public class YogurtGameBoard : MonoBehaviour
         {
             if (row is ToppingData topping && !string.IsNullOrWhiteSpace(topping.ID))
             {
-                _toppingActiveCache[topping.ID] = false;
+                _toppingActiveCache[topping.ID] = true;
             }
         }
     }
@@ -222,6 +223,12 @@ public class YogurtGameBoard : MonoBehaviour
             }
         }
         return result;
+    }
+
+    public ToppingData GetToppingData(string name)
+    {
+        _cache.TryGetValue("Topping", out var table);
+        return (ToppingData)table[name];
     }
 
     private static string ToShortTableName(string tableName)

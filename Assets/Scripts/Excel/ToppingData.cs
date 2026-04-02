@@ -10,4 +10,7 @@ public class ToppingData : TableDataBase
 	public int ExFlavor;
 	public int capability;
 	public string Tags;
+	public string DraggerName;
+	public string GrooveName;
+	public string color;
 }

@@ -268,7 +268,7 @@ public class NpcController : MonoBehaviour
             if (queueArrivalShouldAddOrder)
             {
                 queueArrivalShouldAddOrder = false;
-                OrderManager.Instance.AddOrder(this);
+                // OrderManager.Instance.AddOrder(this);
             }
         }
     }

@@ -25,9 +25,9 @@ public class YogurtProcessData
     public float StirForceAccumulated { get; set; }
 
     /// <summary>
-    /// 已添加的 Topping 标签列表
+    /// 已添加的 Topping 标签列表（Tag + 数值）
     /// </summary>
-    public List<YogurtTag> AddedToppingTags { get; private set; } = new List<YogurtTag>();
+    public List<TagData> AddedToppingTags { get; private set; } = new List<TagData>();
 
     /// <summary>
     /// 累计口味值（基于各种操作累加）
@@ -70,15 +70,37 @@ public class YogurtProcessData
     }
 
     /// <summary>
-    /// 添加一个 Topping
+    /// 添加一个 Topping（TagData，自动合并同 Tag 累加数值）
     /// </summary>
-    /// <param name="tag">Topping 标签</param>
+    public void AddTopping(TagData topping)
+    {
+        if (topping.Tag == YogurtTag.None) return;
+        int existingIdx = AddedToppingTags.FindIndex(t => t.Tag == topping.Tag);
+        if (existingIdx >= 0)
+        {
+            var existing = AddedToppingTags[existingIdx];
+            AddedToppingTags[existingIdx] = new TagData(existing.Tag, existing.Value + topping.Value);
+        }
+        else
+        {
+            AddedToppingTags.Add(topping);
+        }
+    }
+
+    /// <summary>
+    /// 添加一个 Topping（仅有 Tag，数值默认为 1）
+    /// </summary>
     public void AddTopping(YogurtTag tag)
     {
-        if (tag != YogurtTag.None && !AddedToppingTags.Contains(tag))
-        {
-            AddedToppingTags.Add(tag);
-        }
+        AddTopping(new TagData(tag, 1));
+    }
+
+    /// <summary>
+    /// 获取最终配料标签列表（用于传递给 YogurtData）
+    /// </summary>
+    public List<TagData> GetIngredientTags()
+    {
+        return new List<TagData>(AddedToppingTags);
     }
 
     /// <summary>
@@ -88,15 +110,5 @@ public class YogurtProcessData
     public void AddFlavor(float delta)
     {
         FlavorAccumulated += delta;
-    }
-
-    /// <summary>
-    /// 获取最终配料标签列表（用于传递给 YogurtData）
-    /// </summary>
-    public List<YogurtTag> GetIngredientTags()
-    {
-        // TODO: 根据 AddedToppingTags 返回完整的标签列表
-        // 目前返回副本
-        return new List<YogurtTag>(AddedToppingTags);
     }
 }

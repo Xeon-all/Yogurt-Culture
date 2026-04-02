@@ -41,6 +41,8 @@ public class CameraManager : MonoBehaviour {
     /// </summary>
     /// <param name="onComplete">切换完成后的回调</param>
     public void TransitionToFocus() {
+        var brain = gameObject.GetComponent<CinemachineBrain>();
+        if(GameLoopManager.Instance.CurrentPhase != GamePhase.Init || brain.IsBlending) return;
         if (vcamFull == null || vcamFocus == null) return;
         vcamFull.gameObject.SetActive(false);
         vcamFocus.gameObject.SetActive(true);

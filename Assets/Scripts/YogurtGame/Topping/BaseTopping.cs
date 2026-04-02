@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Reflection;
 
 /// <summary>
 /// 基础Topping实现示例
@@ -48,22 +47,18 @@ public class BaseTopping : Topping
     
     // 物理相关
     private Rigidbody2D rb;
-    // private IngredientController ingredientController;
-    private IngredientController ingredient;
+    private YogurtBase ingredient;
     private Transform ingredientTransform;
     private Vector3 center;
     private bool physicsEnabled = false;
     
-    // 用于获取angularVelocity的反射字段和目标对象
-    private FieldInfo angularVelocityField;
-    private Ingredient currentYogurtProgress; // 保存当前Yogurt Progress引用
     // 缓存自身的 Collider2D 以供快速检测
     private Collider2D cachedCollider;
-    
+
     protected override void Awake()
     {
         base.Awake();
-        
+
         // 获取Rigidbody2D组件
         rb = GetComponent<Rigidbody2D>();
         if (rb == null)
@@ -72,76 +67,46 @@ public class BaseTopping : Topping
         }
         // 缓存自身 Collider2D，避免每次调用 GetComponent
         cachedCollider = GetComponent<Collider2D>();
-        
+
         // 初始状态禁用物理
         rb.isKinematic = true;
     }
-    
+
     /// <summary>
     /// 第一次调用Show时的效果回调函数（重写以实现复制和定位效果）
     /// </summary>
-    protected override void OnFirstShow(IngredientController ingredientController)
+    protected override void OnFirstShow(YogurtBase yogurtBase)
     {
-        // 如果是复制体，不执行首次Show的效果
         if (isClone)
         {
             return;
         }
-        // 在首次显示时，使用传入的 IngredientController 设置所属引用（由调用方传入）
-        if (ingredientController != null)
+
+        if (yogurtBase != null)
         {
-            SetIngredient(ingredientController);
+            SetIngredient(yogurtBase);
         }
 
-        // 调用基类方法，设置scale等基础效果
-        base.OnFirstShow(ingredientController);
-        
-        // 随机调整当前 Topping 的尺寸（70% - 130%）
+        base.OnFirstShow(yogurtBase);
+
         RandomScale();
-        // 创建复制并重新定位
         CreateClonesAndReposition();
-        
-        // 启用物理效果
         EnablePhysics();
     }
-    
-    /// <summary>
-    /// 设置Ingredient引用（由IngredientController调用）
-    /// </summary>
-    public void SetIngredient(IngredientController ingredientComponent)
-    {
-        ingredient = ingredientComponent;
 
-        // 获取IngredientController和Transform
+    /// <summary>
+    /// 设置YogurtBase引用（由YogurtFactory调用）
+    /// </summary>
+    public void SetIngredient(YogurtBase yogurtBase)
+    {
+        ingredient = yogurtBase;
+
         if (ingredient == null)
         {
             return;
         }
 
         ingredientTransform = ingredient.transform;
-
-        // 优先尝试从 ProgressController 获取当前正在进行的 Ingredient（若已初始化）
-        if (ProgressController.Instance != null)
-        {
-            currentYogurtProgress = ProgressController.Instance.GetCurrentYogurtProgress();
-        }
-
-        // 如果 ProgressController 尚未设置 currentYogurtProgress，回退为使用传入的 IngredientController 所在的 Ingredient 组件
-        if (currentYogurtProgress == null)
-        {
-            Ingredient fallbackIngredient = ingredientComponent.GetComponent<Ingredient>();
-            if (fallbackIngredient != null)
-            {
-                currentYogurtProgress = fallbackIngredient;
-            }
-        }
-
-        // 如果找到了具体的 Ingredient 实例，尝试建立反射（仅对 NormalYogurt 有效）
-        if (currentYogurtProgress != null && currentYogurtProgress is NormalYogurt)
-        {
-            angularVelocityField = typeof(NormalYogurt).GetField("angularVelocity",
-                BindingFlags.NonPublic | BindingFlags.Instance);
-        }
     }
     
     /// <summary>
@@ -193,22 +158,8 @@ public class BaseTopping : Topping
             return; // 距离太近，跳过计算
         }
         
-        // 使用已建立的反射字段读取angularVelocity（如果尚未绑定则尝试在此处延迟绑定）
+        // 融化计算不依赖角速度，保持独立运行
         float angularVelocity = 0f;
-
-        if (angularVelocityField == null)
-        {
-            SetIngredient(ingredient);
-        }
-
-        if (angularVelocityField != null && currentYogurtProgress != null)
-        {
-            object value = angularVelocityField.GetValue(currentYogurtProgress);
-            if (value != null)
-            {
-                angularVelocity = (float)value;
-            }
-        }
         
         // 将angularVelocity转换为rad/s（200度/秒 = 1周/秒 = 2π rad/s）
         float angularVelocityRad = angularVelocity/200*360 * Mathf.Deg2Rad;
@@ -378,37 +329,24 @@ public class BaseTopping : Topping
     /// </summary>
     private void CreateClonesAndReposition()
     {
-        // 获取IngredientController的GameObject（通过parent查找）
-        Transform ingredientControllerTransform = transform.parent;
-        if (ingredientControllerTransform == null)
+        if (parentYogurtBase == null)
         {
-            Debug.LogWarning("[BaseTopping] 无法找到IngredientController的GameObject，无法创建复制");
+            Debug.LogWarning("[BaseTopping] 无法找到YogurtBase，无法创建复制");
             return;
         }
-        
-        IngredientController ingredientController = ingredientControllerTransform.GetComponent<IngredientController>();
-        if (ingredientController == null)
-        {
-            Debug.LogWarning("[BaseTopping] Parent不是IngredientController，无法创建复制");
-            return;
-        }
-        
-        // 确保复制数量有效
+
+        Transform parentTransform = parentYogurtBase.transform;
+        Vector3 center = parentTransform.position;
+
         if (cloneCount < 0)
         {
             cloneCount = 0;
         }
-        
-        Vector3 center = ingredientControllerTransform.position;
-        int totalCount = 1 + cloneCount; // 原 + 复制数量
-        
-        // 生成复制
-        BaseTopping[] allToppings = GenerateClones(ingredientControllerTransform, ingredientController);
-        
-        // 生成位置（总数 = 原 + 复制）
+
+        int totalCount = 1 + cloneCount;
+        BaseTopping[] allToppings = GenerateClones(parentTransform);
         Vector3[] positions = GeneratePositionsAroundCenter(center, maxDist, totalCount);
-        
-        // 设置所有Topping的位置（使用localPosition）
+
         transform.localPosition = positions[0] - center;
         for (int i = 0; i < allToppings.Length; i++)
         {
@@ -436,46 +374,34 @@ public class BaseTopping : Topping
     /// 生成复制体
     /// </summary>
     /// <param name="parent">父Transform</param>
-    /// <param name="ingredientController">IngredientController引用</param>
     /// <returns>生成的复制体数组</returns>
-    private BaseTopping[] GenerateClones(Transform parent, IngredientController ingredientController)
+    private BaseTopping[] GenerateClones(Transform parent)
     {
         if (cloneCount <= 0)
         {
             return new BaseTopping[0];
         }
-        
+
         BaseTopping[] clones = new BaseTopping[cloneCount];
-        
+
         for (int i = 0; i < cloneCount; i++)
         {
-            // 创建复制
             GameObject cloneObj = Instantiate(gameObject, parent);
             BaseTopping clone = cloneObj.GetComponent<BaseTopping>();
-            
+
             if (clone != null)
             {
-                // 标记为复制体
                 clone.isClone = true;
-                clone.hasSetScale = true; // 复制体已经有scale了
-                clone.hasPerformedFirstShow = true; // 复制体不触发首次Show效果
-                
-                // 为复制体设置所属 IngredientController，以便 EnablePhysics 能正常工作
-                clone.SetIngredient(ingredientController);
-
-                // 让复制体在首次出现时也执行随机缩放
+                clone.hasSetScale = true;
+                clone.hasPerformedFirstShow = true;
+                clone.SetIngredient(parentYogurtBase);
                 clone.RandomScale();
-
-                // 将复制添加到IngredientController（显示/隐藏由 IngredientController 管理）
-                ingredientController.AddTopping(clone);
-                
-                // 复制体也需要启用物理效果
                 clone.EnablePhysics();
             }
-            
+
             clones[i] = clone;
         }
-        
+
         return clones;
     }
     
@@ -639,19 +565,13 @@ public class BaseTopping : Topping
     }
 
     /// <summary>
-    /// 在销毁时从所属 IngredientController 中移除自身，完成清理工作
+    /// 在融化结束时触发，加一口味并销毁
     /// </summary>
     private void OnMeltEnd()
     {
-        // 在融化结束时，将 flavor 加一（如果存在当前的 Ingredient 模型）
-        if (currentYogurtProgress != null)
-        {
-            currentYogurtProgress.AdjustFlavor(1f);
-        }
-
         if (ingredient != null)
         {
-            ingredient.RemoveTopping(this);
+            ingredient.AdjustFlavor(1);
         }
         Destroy(gameObject);
     }

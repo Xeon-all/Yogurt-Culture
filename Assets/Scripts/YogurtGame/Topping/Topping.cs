@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 /// <summary>
 /// Topping 基类：所有配料装饰的基类
-/// 实现拖拽功能，鼠标松开后检测是否添加到Ingredient
+/// 实现拖拽功能，鼠标松开后检测是否添加到YogurtBase
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -19,7 +19,7 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     [SerializeField] protected bool lockZAxis = true;
 
     [Header("检测设置")]
-    [Tooltip("Ingredient 的 Layer 名称（用于检测是否添加到酸奶碗）")]
+    [Tooltip("YogurtBase 的 Layer 名称（用于检测是否添加到酸奶碗）")]
     [SerializeField] protected string ingredientLayerName = "ingredient";
 
     [SerializeField] private float sizeInBowl = 0.1f;
@@ -32,10 +32,10 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     
     // 状态记录（无论是否隐藏都会持续记录）
     protected Dictionary<string, object> stateData = new Dictionary<string, object>();
-    protected bool isAddedToIngredient = false;
-    protected Ingredient parentIngredient;
-    
-    // 保存相对于 IngredientController 中心的极坐标（半径和角度），以便多次打开保持不变
+    protected bool isAddedToYogurtBase = false;
+    protected YogurtBase parentYogurtBase;
+
+    // 保存相对于 YogurtBase 中心的极坐标（半径和角度），以便多次打开保持不变
     protected float savedPolarRadius = 0f;
     protected float savedPolarAngle = 0f; // radians
     protected bool hasSavedPolar = false;
@@ -172,8 +172,8 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
 
         isDragging = false;
         
-        // 检测是否与Ingredient重合
-        CheckAndAddToIngredient();
+        // 检测是否与YogurtBase重合
+        CheckAndAddToYogurtBase();
         
         // 更新状态
         UpdateState();
@@ -191,9 +191,9 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     }
     
     /// <summary>
-    /// 检测是否与Ingredient重合，如果重合则添加到Ingredient（公共方法，供外部调用）
+    /// 检测是否与YogurtBase重合，如果重合则添加到YogurtBase（公共方法，供外部调用）
     /// </summary>
-    public void CheckAndAddToIngredient()
+    public void CheckAndAddToYogurtBase()
     {
         Collider2D selfCollider = GetComponent<Collider2D>();
         if (selfCollider == null)
@@ -210,7 +210,7 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
             return;
         }
 
-        // 检测与Ingredient图层的碰撞
+        // 检测与YogurtBase图层的碰撞
         ContactFilter2D filter = new ContactFilter2D
         {
             useLayerMask = true,
@@ -223,31 +223,22 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         
         if (hitCount > 0)
         {
-            // 找到第一个有效的Ingredient
+            // 找到第一个有效的YogurtBase
             foreach (var hit in results)
             {
                 if (hit == null) continue;
-                
-                // 尝试获取IngredientController
-                IngredientController ingredientController = hit.GetComponent<IngredientController>();
-                if (ingredientController != null)
+
+                // 直接获取YogurtBase组件
+                YogurtBase yogurtBase = hit.GetComponent<YogurtBase>();
+                if (yogurtBase != null)
                 {
-                    // 添加到IngredientController
-                    ingredientController.AddTopping(this);
-                    isAddedToIngredient = true;
-                    
-                    // 获取Ingredient组件（如果存在）用于设置父Ingredient
-                    Ingredient ingredient = hit.GetComponent<Ingredient>();
-                    if (ingredient != null)
-                    {
-                        parentIngredient = ingredient;
-                        SetParentIngredient(ingredient);
-                    }
-                    
-                    // 隐藏实体（但不销毁，因为IngredientController需要管理）
+                    parentYogurtBase = yogurtBase;
+                    SetParentIngredient(yogurtBase);
+                    isAddedToYogurtBase = true;
+
+                    // 隐藏实体（由YogurtFactory统一管理生命周期）
                     gameObject.SetActive(false);
-                    
-                    // 更新状态
+
                     UpdateState();
                     return;
                 }
@@ -268,7 +259,7 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         stateData["rotation"] = transform.rotation;
         stateData["scale"] = transform.localScale;
         stateData["isDragging"] = isDragging;
-        stateData["isAddedToIngredient"] = isAddedToIngredient;
+        stateData["isAddedToYogurtBase"] = isAddedToYogurtBase;
     }
     
     /// <summary>
@@ -292,49 +283,47 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     }
     
     /// <summary>
-    /// 检查是否已添加到Ingredient
+    /// 检查是否已添加到YogurtBase
     /// </summary>
-    public bool IsAddedToIngredient()
+    public bool IsAddedToYogurtBase()
     {
-        return isAddedToIngredient;
+        return isAddedToYogurtBase;
     }
     
     /// <summary>
-    /// 获取父Ingredient
+    /// 获取父YogurtBase
     /// </summary>
-    public Ingredient GetParentIngredient()
+    public YogurtBase GetParentYogurtBase()
     {
-        return parentIngredient;
+        return parentYogurtBase;
     }
-    
+
     /// <summary>
-    /// 设置父Ingredient（由Ingredient调用）
+    /// 设置父YogurtBase（由YogurtFactory调用）
     /// </summary>
-    public void SetParentIngredient(Ingredient ingredient)
+    public void SetParentIngredient(YogurtBase yogurtBase)
     {
-        parentIngredient = ingredient;
+        parentYogurtBase = yogurtBase;
         UpdateState();
     }
-    
+
     /// <summary>
-    /// 显示Topping（由Ingredient调用）
+    /// 显示Topping（由YogurtFactory调用）
     /// </summary>
-    public virtual void Show(IngredientController ingredientController)
+    public virtual void Show(YogurtBase yogurtBase)
     {
         gameObject.SetActive(true);
-        
-        // 生命周期内第一次调用Show时，执行第一次Show的效果
+
         if (!hasPerformedFirstShow)
         {
-            OnFirstShow(ingredientController);
+            OnFirstShow(yogurtBase);
             hasPerformedFirstShow = true;
         }
         else
         {
-            // 非首次打开：如果已经保存了相对于 Ingredient 的 localPosition，则恢复它
-            if (ingredientController != null)
+            if (yogurtBase != null)
             {
-                Vector3 center = ingredientController.transform.position;
+                Vector3 center = yogurtBase.transform.position;
                 if (hasSavedPolar)
                 {
                     Vector3 worldPos = center + new Vector3(Mathf.Cos(savedPolarAngle) * savedPolarRadius, Mathf.Sin(savedPolarAngle) * savedPolarRadius, transform.position.z - center.z);
@@ -342,7 +331,6 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
                 }
                 else
                 {
-                    // 首次在父对象下显示时保存当前位置的极坐标
                     Vector3 offset = transform.position - center;
                     savedPolarRadius = new Vector2(offset.x, offset.y).magnitude;
                     savedPolarAngle = Mathf.Atan2(offset.y, offset.x);
@@ -353,36 +341,28 @@ public abstract class Topping : MonoBehaviour, IBeginDragHandler, IDragHandler, 
 
         UpdateState();
     }
-    
+
     /// <summary>
-    /// 第一次调用Show时的效果回调函数（在基类中实现基础效果）
-    /// 接收 IngredientController 参数以便子类使用传入的引用进行初始化
+    /// 第一次调用Show时的效果回调函数（子类可重写）
     /// </summary>
-    protected virtual void OnFirstShow(IngredientController ingredientController)
+    protected virtual void OnFirstShow(YogurtBase yogurtBase)
     {
-        // 设置scale为sizeInBowl
         transform.localScale = Vector3.one * sizeInBowl;
         hasSetScale = true;
     }
-    
+
     /// <summary>
-    /// 隐藏Topping（由Ingredient调用）
+    /// 隐藏Topping（由YogurtFactory调用）
     /// </summary>
     public virtual void Hide()
     {
-        // 在隐藏时保存相对于 Ingredient 的本地位置，供下次显示恢复
-        if (transform.parent != null)
+        if (transform.parent != null && parentYogurtBase != null)
         {
-            Transform parentTransform = transform.parent;
-            IngredientController ic = parentTransform.GetComponent<IngredientController>();
-            if (ic != null)
-            {
-                Vector3 center = ic.transform.position;
-                Vector3 offset = transform.position - center;
-                savedPolarRadius = new Vector2(offset.x, offset.y).magnitude;
-                savedPolarAngle = Mathf.Atan2(offset.y, offset.x);
-                hasSavedPolar = true;
-            }
+            Vector3 center = parentYogurtBase.transform.position;
+            Vector3 offset = transform.position - center;
+            savedPolarRadius = new Vector2(offset.x, offset.y).magnitude;
+            savedPolarAngle = Mathf.Atan2(offset.y, offset.x);
+            hasSavedPolar = true;
         }
 
         gameObject.SetActive(false);

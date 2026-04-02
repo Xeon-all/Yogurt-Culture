@@ -1,92 +1,152 @@
 ﻿[
   {
-    "ID": "honey",
-    "ExFlavor": 1,
+    "ID": "Honey",
+    "Name": "蜂蜜",
+    "ExFlavor": 0,
     "capability": 20,
-    "Tags": ""
+    "Tags": "sweet,3",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#FFB300"
   },
   {
-    "ID": "oats",
+    "ID": "Cornflakes",
+    "Name": "玉米片",
+    "ExFlavor": 0,
+    "capability": 10,
+    "Tags": "crispy,3",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#FFE082"
+  },
+  {
+    "ID": "DarkChoc",
+    "Name": "黑巧碎",
+    "ExFlavor": 1,
+    "capability": 10,
+    "Tags": "rich,3",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#3E2723"
+  },
+  {
+    "ID": "BlueberryJam",
+    "Name": "蓝莓果酱",
+    "ExFlavor": 0,
+    "capability": 10,
+    "Tags": "fruity,2;sweet,2",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#512DA8"
+  },
+  {
+    "ID": "GreenAppleDices",
+    "Name": "青苹果块",
+    "ExFlavor": 0,
+    "capability": 10,
+    "Tags": "fruity,2;sour,2",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#8BC34A"
+  },
+  {
+    "ID": "CaramelAlmonds",
+    "Name": "焦糖杏仁",
     "ExFlavor": 2,
     "capability": 10,
-    "Tags": "crispy,cereal"
+    "Tags": "rich,2;crispy,2",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#D84315"
   },
   {
-    "ID": "test1",
-    "ExFlavor": 0,
+    "ID": "FreezedriedStrawberry",
+    "Name": "草莓冻干碎",
+    "ExFlavor": 1,
     "capability": 10,
-    "Tags": ""
+    "Tags": "fruity,1;sour,1;crispy,1",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#E53935"
   },
   {
-    "ID": "test2",
-    "ExFlavor": 0,
+    "ID": "YogurtChunks",
+    "Name": "老酸奶",
+    "ExFlavor": 1,
     "capability": 10,
-    "Tags": ""
+    "Tags": "sour,2;rich,2",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#FFF59D"
   },
   {
-    "ID": "test3",
+    "ID": "CandiedLemon",
+    "Name": "糖渍柠檬",
     "ExFlavor": 0,
     "capability": 10,
-    "Tags": ""
+    "Tags": "sour,1;sweet,2;fruity,1",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#FFEE58"
   },
   {
-    "ID": "test4",
-    "ExFlavor": 0,
+    "ID": "BakedGranola",
+    "Name": "焙燕麦",
+    "ExFlavor": 2,
     "capability": 10,
-    "Tags": ""
-  },
-  {
-    "ID": "test5",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": ""
-  },
-  {
-    "ID": "test6",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": ""
-  },
-  {
-    "ID": "test7",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": ""
-  },
-  {
-    "ID": "test8",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": ""
+    "Tags": "rich,1;crispy,2;sweet,1",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#558B2F"
   },
   {
     "ID": "test9",
+    "Name": "",
     "ExFlavor": 0,
     "capability": 10,
-    "Tags": ""
+    "Tags": "",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#bbbbbb"
   },
   {
     "ID": "test10",
+    "Name": "",
     "ExFlavor": 0,
     "capability": 10,
-    "Tags": ""
+    "Tags": "",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#cccccc"
   },
   {
     "ID": "test11",
+    "Name": "",
     "ExFlavor": 0,
     "capability": 10,
-    "Tags": ""
+    "Tags": "",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#dddddd"
   },
   {
     "ID": "test12",
+    "Name": "",
     "ExFlavor": 0,
     "capability": 10,
-    "Tags": ""
+    "Tags": "",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#eeeeee"
   },
   {
     "ID": "test13",
+    "Name": "",
     "ExFlavor": 0,
     "capability": 10,
-    "Tags": ""
+    "Tags": "",
+    "DraggerName": "BaseDragger",
+    "GrooveName": "Default",
+    "color": "#ffffff"
   }
 ]

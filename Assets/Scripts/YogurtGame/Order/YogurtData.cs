@@ -1,10 +1,26 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
+
+/// <summary>
+/// 单个 Tag 的信息，包含枚举值和一个整数
+/// </summary>
+[Serializable]
+public struct TagData
+{
+    public YogurtTag Tag;
+    public int Value;
+
+    public TagData(YogurtTag tag, int value)
+    {
+        Tag = tag;
+        Value = value;
+    }
+}
 
 /// <summary>
 /// 酸奶产品标签枚举
@@ -25,7 +41,10 @@ public enum YogurtTag
     // ========== 成品特性 ==========
     // 成品酸奶可能具有的特殊属性
     crispy = 1,
-    cereal = 2,
+    sweet = 3,
+    rich = 4,
+    fruity = 5,
+    sour = 6,
 }
 
 /// <summary>
@@ -73,28 +92,47 @@ public class YogurtData : MonoBehaviour
     }
 
     [Header("配料标签")]
-    [SerializeField] private List<YogurtTag> ingredientTags = new();
+    [SerializeField] private List<TagData> ingredientTags = new();
 
     [Header("口味")]
     [SerializeField] private float flavor = 0f;
 
-    public void SetIngredients(IList<Ingredient> newIngredients)
+    /// <summary>
+    /// 获取口味值（int）
+    /// </summary>
+    public int FlavorInt => Mathf.RoundToInt(flavor);
+
+    /// <summary>
+    /// 获取口味值（float）
+    /// </summary>
+    public float FlavorFloat => flavor;
+
+    public void SetIngredients(IList<YogurtBase> newIngredients)
     {
         ingredientTags.Clear();
         if (newIngredients == null) return;
 
-        foreach (Ingredient ingredient in newIngredients)
+        foreach (YogurtBase yogurtBase in newIngredients)
         {
-            if (ingredient != null)
+            if (yogurtBase != null)
             {
-                ingredientTags.Add(YogurtTag.None);
+                ingredientTags.Add(new TagData(YogurtTag.None, 0));
             }
         }
     }
 
-    public List<YogurtTag> GetIngredientTags()
+    public List<TagData> GetIngredientTags()
     {
         return ingredientTags;
+    }
+
+    /// <summary>
+    /// 清空所有数据（口味归零、配料列表清空）
+    /// </summary>
+    public void Clear()
+    {
+        flavor = 0f;
+        ingredientTags.Clear();
     }
 
     public void SetFlavor(float value)
@@ -119,13 +157,50 @@ public class YogurtData : MonoBehaviour
     }
 
     /// <summary>
+    /// 通过 YogurtProduct 设置配料和口味
+    /// </summary>
+    public void SetFromProduct(YogurtProduct product)
+    {
+        if (product == null) return;
+
+        ingredientTags.Clear();
+        foreach (var tag in product.Tags)
+        {
+            ingredientTags.Add(new TagData(tag.Tag, tag.Value));
+        }
+        flavor = product.Flavor;
+    }
+
+    /// <summary>
     /// 添加一个配料标签
     /// </summary>
     public void AddTag(YogurtTag tag)
     {
-        if (!ingredientTags.Contains(tag))
+        AddTag(new TagData(tag, 1));
+    }
+
+    /// <summary>
+    /// 添加一个配料标签（带数值）
+    /// </summary>
+    public void AddTag(YogurtTag tag, int value)
+    {
+        AddTag(new TagData(tag, value));
+    }
+
+    /// <summary>
+    /// 添加一个配料标签（TagData）
+    /// </summary>
+    public void AddTag(TagData tagData)
+    {
+        int existingIdx = ingredientTags.FindIndex(t => t.Tag == tagData.Tag);
+        if (existingIdx >= 0)
         {
-            ingredientTags.Add(tag);
+            var existing = ingredientTags[existingIdx];
+            ingredientTags[existingIdx] = new TagData(existing.Tag, existing.Value + tagData.Value);
+        }
+        else
+        {
+            ingredientTags.Add(tagData);
         }
     }
 
@@ -134,36 +209,48 @@ public class YogurtData : MonoBehaviour
     /// </summary>
     public bool HasTag(YogurtTag tag)
     {
-        return ingredientTags.Contains(tag);
+        return ingredientTags.Exists(t => t.Tag == tag);
     }
 
     /// <summary>
-    /// 解析逗号分隔的 Tag 字符串，返回对应的枚举列表
+    /// 获取指定标签的数值，若不存在返回 0
+    /// </summary>
+    public int GetTagValue(YogurtTag tag)
+    {
+        var found = ingredientTags.Find(t => t.Tag == tag);
+        return found.Tag == tag ? found.Value : 0;
+    }
+
+    /// <summary>
+    /// 解析 Tag 字符串，返回 TagData 列表
+    /// 格式：不同 Tag 用分号分隔，单个 Tag 用逗号分隔，如 "sweet,2;sour,4"
     /// 自动处理未知 Tag：若遇到未在枚举中定义的 Tag，会自动添加到枚举文件末尾
     /// </summary>
-    /// <param name="tagString">逗号分隔的 Tag 字符串，如 "crispy,cereal"</param>
-    /// <returns>解析后的 YogurtTag 列表</returns>
-    public static List<YogurtTag> ParseTags(string tagString)
+    /// <param name="tagString">Tag 字符串，如 "sweet,2;sour,4"</param>
+    /// <returns>解析后的 TagData 列表</returns>
+    public static List<TagData> ParseTags(string tagString)
     {
-        var result = new List<YogurtTag>();
+        var result = new List<TagData>();
 
         if (string.IsNullOrWhiteSpace(tagString))
         {
             return result;
         }
 
-        string[] parts = tagString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-        for (int i = 0; i < parts.Length; i++)
+        string[] entries = tagString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (string entry in entries)
         {
-            parts[i] = parts[i].Trim();
-        }
+            string trimmed = entry.Trim();
+            if (string.IsNullOrEmpty(trimmed)) continue;
 
-        foreach (string part in parts)
-        {
-            if (string.IsNullOrWhiteSpace(part)) continue;
+            string[] kv = trimmed.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            if (kv.Length == 0) continue;
 
-            YogurtTag tag = GetOrCreateTag(part);
-            result.Add(tag);
+            string tagName = kv[0].Trim();
+            int intValue = kv.Length > 1 && int.TryParse(kv[1].Trim(), out int parsed) ? parsed : 0;
+
+            YogurtTag tag = GetOrCreateTag(tagName);
+            result.Add(new TagData(tag, intValue));
         }
 
         return result;
@@ -233,8 +320,25 @@ public class YogurtData : MonoBehaviour
             return YogurtTag.None;
         }
 
-        // 生成新枚举值（使用下一个可用值）
-        int nextValue = _tagNameToEnum.Count > 0 ? Mathf.Max(_tagNameToEnum.Count, 1) : 0;
+        // 解析现有枚举中所有显式赋值的最大值
+        int maxValue = 0;
+        var assignedValues = new HashSet<int>();
+        foreach (YogurtTag existingTag in Enum.GetValues(typeof(YogurtTag)))
+        {
+            int val = Convert.ToInt32(existingTag);
+            if (assignedValues.Contains(val))
+            {
+                Debug.LogWarning($"[YogurtData] Duplicate enum value detected: {existingTag} = {val}. YogurtData.cs may need cleanup.");
+            }
+            else
+            {
+                assignedValues.Add(val);
+                if (val > maxValue) maxValue = val;
+            }
+        }
+
+        // 生成新枚举值
+        int nextValue = maxValue + 1;
         string newEnumLine = $"    {tagName} = {nextValue},";
 
         // 插入新行
