@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 public class ToppingData : TableDataBase
 {
+	public string Name;
 	public int ExFlavor;
 	public int capability;
 	public string Tags;

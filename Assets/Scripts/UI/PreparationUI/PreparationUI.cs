@@ -122,7 +122,7 @@ public class PreparationUI : MonoBehaviour
         dataCache.Topping = data;
         if (textComponent != null)
         {
-            textComponent.text = data.ID;
+            textComponent.text = data.Name;
         }
         else
         {
