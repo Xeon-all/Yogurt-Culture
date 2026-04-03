@@ -12,6 +12,11 @@ namespace YogurtCulture.GameLoop
         public int ordersCompleted = 0;
         public float satisfaction = 100f;
 
+        public int todaySuccessOrders = 0;
+        public int todayFailOrders = 0;
+        public float todayReputationGain = 0f;
+        public int todayLevelUps = 0;
+
         public event System.Action<int, bool> OnOrderCompleted;
         public event System.Action<float> OnMoneyChanged;
 

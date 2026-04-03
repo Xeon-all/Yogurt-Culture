@@ -7,29 +7,34 @@ public class UIMovementController : MonoBehaviour {
     [Tooltip("动画持续时间（秒）")]
     [SerializeField] private float duration = 0.3f;
     [SerializeField] private Vector2 moveBy;
-    private Vector3 _startPos;
-    private Vector3 _targetPos;
+    private Vector2 _hidePos;
+    private Vector2 _showPos;
     private float _progress;
     private bool _isAnimating;
     private Coroutine _coroutine;
-    public void Move()
+    void Awake()
     {
-        MoveBy(moveBy);
+        _showPos = transform.position;
+        _hidePos = _showPos + moveBy;
     }
 
-    public void MoveTo(Vector3 target) {
+    public void MoveShow() {
         if (_coroutine != null) {
             StopCoroutine(_coroutine);
         }
-        _startPos = target;
-        _targetPos = transform.position;
         _progress = 0f;
         _isAnimating = true;
-        _coroutine = StartCoroutine(Animate());
+        _coroutine = StartCoroutine(Animate(_hidePos, _showPos));
     }
 
-    public void MoveBy(Vector3 offset) {
-        MoveTo(transform.position + offset);
+    public void MoveHide()
+    {
+        if (_coroutine != null) {
+            StopCoroutine(_coroutine);
+        }
+        _progress = 0f;
+        _isAnimating = true;
+        _coroutine = StartCoroutine(Animate(_showPos, _hidePos));
     }
 
     public void MoveToImmediate(Vector3 target) {
@@ -41,16 +46,16 @@ public class UIMovementController : MonoBehaviour {
         transform.position = target;
     }
 
-    private System.Collections.IEnumerator Animate() {
+    private System.Collections.IEnumerator Animate(Vector2 start, Vector2 end) {
         while (_isAnimating && _progress < 1f) {
             _progress += Time.deltaTime / duration;
             float t = moveCurve.Evaluate(Mathf.Clamp01(_progress));
-            transform.position = Vector3.LerpUnclamped(_startPos, _targetPos, t);
+            transform.position = Vector3.LerpUnclamped(start, end, t);
             yield return null;
         }
 
         if (_isAnimating) {
-            transform.position = _targetPos;
+            transform.position = end;
         }
         _isAnimating = false;
         _coroutine = null;

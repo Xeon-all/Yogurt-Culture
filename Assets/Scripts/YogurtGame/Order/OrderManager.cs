@@ -362,6 +362,22 @@ public class OrderManager : Singleton<OrderManager>
     }
 
     /// <summary>
+    /// 清理所有已存在的订单实体（MorningOp 退出时调用）。
+    /// </summary>
+    public void ClearAllOrders()
+    {
+        foreach (Transform slot in _orderSlots)
+        {
+            foreach (Transform child in slot)
+            {
+                var entity = child.GetComponent<OrderEntity>();
+                if (entity != null)
+                    Destroy(child.gameObject);
+            }
+        }
+    }
+
+    /// <summary>
     /// 手动生成订单需求（保留以防外部调用）。
     /// </summary>
     public List<TagData> OrderDemands()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using TMPro;
 
 namespace YogurtCulture.GameLoop
 {
@@ -45,6 +46,16 @@ namespace YogurtCulture.GameLoop
         [SerializeField] public List<UnityEvent> preparationAction;
         [Header("经营阶段")]
         [SerializeField] public GameObject npcManager;
+        [Header("结算阶段")]
+        [SerializeField] private GameObject settlementUI;
+        [SerializeField] private TextMeshProUGUI settlementDayText;
+        [SerializeField] private TextMeshProUGUI settlementMoneyText;
+        [SerializeField] private TextMeshProUGUI settlementSuccessText;
+        [SerializeField] private TextMeshProUGUI settlementFailText;
+        [SerializeField] private Image settlementSatisfactionFill;
+        [SerializeField] private TextMeshProUGUI settlementLevelText;
+        [SerializeField] private Image settlementReputationFill;
+        [SerializeField] public List<UnityEvent> settleEnterAction;
         private int _currentPhaseIndex;
         private GamePhase _currentPhase;
         private bool _isPaused;
@@ -77,6 +88,15 @@ namespace YogurtCulture.GameLoop
         /// 获取准备阶段 UI
         /// </summary>
         public List<GameObject> GetPreparationUI() => preparationUI;
+
+        public GameObject SettlementUI => settlementUI;
+        public TextMeshProUGUI SettlementDayText => settlementDayText;
+        public TextMeshProUGUI SettlementMoneyText => settlementMoneyText;
+        public TextMeshProUGUI SettlementSuccessText => settlementSuccessText;
+        public TextMeshProUGUI SettlementFailText => settlementFailText;
+        public Image SettlementSatisfactionFill => settlementSatisfactionFill;
+        public TextMeshProUGUI SettlementLevelText => settlementLevelText;
+        public Image SettlementReputationFill => settlementReputationFill;
         
         /// <summary>
         /// Debug: 手动进入下一阶段
