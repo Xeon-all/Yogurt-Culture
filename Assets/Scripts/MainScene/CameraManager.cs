@@ -132,7 +132,7 @@ public class CameraManager : MonoBehaviour {
 
     void Update() {
         // 调试控制器：键盘控制相机移动和缩放
-        DebugController();
+        // DebugController();
     }
 
     void LateUpdate() { // 使用 LateUpdate 确保在相机移动后更新图层

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using YogurtCulture.GameLoop;
 
 /// <summary>
 /// 挂载在 Order Prefab 上的脚本。
@@ -148,17 +149,24 @@ public class OrderEntity : MonoBehaviour
         return string.Join(", ", tags.ConvertAll(t => $"{t.Tag}(实际:{t.Value})"));
     }
 
-    private void OnSubmitSuccess(YogurtData yogurt)
-    {
-        EconomyManager.Instance?.AddMoney(orderData.Price);
-        Destroy(yogurt.gameObject);
-        OrderManager.Instance?.ClearSlot(orderData.SlotIndex);
-        Destroy(gameObject);
-    }
+        private void OnSubmitSuccess(YogurtData yogurt)
+        {
+            var earnings = orderData.Price;
+            GameLoopData data = null;
+            if (GameLoopManager.Instance != null) data = GameLoopManager.Instance.Data;
+            if (data != null) data.AddEarnings(earnings);
+            
+            EconomyManager.Instance?.AddMoney(orderData.Price);
+            GameLoopManager.Instance?.Data.AddOrderCompleted(true);
+            Destroy(yogurt.gameObject);
+            OrderManager.Instance?.ClearSlot(orderData.SlotIndex);
+            Destroy(gameObject);
+        }
 
-    private void OnSubmitFail()
-    {
-        Destroy(gameObject);
-        OrderManager.Instance?.ClearSlot(orderData.SlotIndex);
-    }
+        private void OnSubmitFail()
+        {
+            GameLoopManager.Instance?.Data.AddOrderCompleted(false);
+            Destroy(gameObject);
+            OrderManager.Instance?.ClearSlot(orderData.SlotIndex);
+        }
 }

@@ -8,10 +8,9 @@ using YogurtCulture.GameLoop;
 /// 将此脚本挂载到操作台的GameObject上
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
-public class ToppingSpawner : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler,
-    IReceiveTopping, IBeginDragHandler, IDragHandler, IPointerUpHandler
+public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHandler,
+    IReceiveTopping
 {
-    private ToppingData Topping;
     private SpriteRenderer sr;
 
     [Header("Tooltip 设置")]
@@ -20,7 +19,6 @@ public class ToppingSpawner : MonoBehaviour, IPointerDownHandler, IPointerEnterH
     [SerializeField] private float tooltipDelay = 0.2f;
 
     private Coroutine _tooltipCoroutine;
-    private Vector2 _pos;
 
     void Awake()
     {
@@ -68,27 +66,11 @@ public class ToppingSpawner : MonoBehaviour, IPointerDownHandler, IPointerEnterH
     #endregion
 
     #region 生成拖拽
-    private GameObject Obj;
-    public void OnPointerDown(PointerEventData eventData)
+    public override void OnPointerDown(PointerEventData eventData)
     {
-        if(Topping == null) return;
-        Obj = DesktopManager.Instance.SpawnToppingDragger(Topping);
-        _pos = eventData.position;
+        base.OnPointerDown(eventData);
         if(GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
             ClearContain();
-    }
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        if((_pos - eventData.position).magnitude < 1e-2f)
-            Destroy(Obj);
-    }
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        Obj.GetComponent<DraggerTopping>().InitDrag(eventData);
-    }
-    public void OnDrag(PointerEventData eventData)
-    {
-        
     }
     #endregion
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace YogurtCulture.GameLoop
 {
@@ -9,6 +10,8 @@ namespace YogurtCulture.GameLoop
     /// </summary>
     public class GameLoopManager : Singleton<GameLoopManager>
     {
+        [Header("Temp")]
+        [SerializeField] private Image tempTimerUI;
         /// <summary>
         /// 阶段执行顺序列表（Editor 中配置）
         /// </summary>
@@ -17,10 +20,10 @@ namespace YogurtCulture.GameLoop
         {
             GamePhase.Preparation,
             GamePhase.MorningOp,
-            GamePhase.NoonBreak,
-            GamePhase.AfternoonOp,
+            // GamePhase.NoonBreak,
+            // GamePhase.AfternoonOp,
             GamePhase.Settlement,
-            GamePhase.NightAction
+            // GamePhase.NightAction
         };
         private Dictionary<GamePhase, Type> builtInPhases = new Dictionary<GamePhase, Type>
         {
@@ -118,6 +121,8 @@ namespace YogurtCulture.GameLoop
             
             _currentHandler = Activator.CreateInstance(handlerType) as IPhaseHandler;
             _currentHandler?.OnPhaseEnter(gameData);
+            if(_currentHandler is MorningOpHandler)
+                (_currentHandler as MorningOpHandler).tempTimerUI = tempTimerUI;
         }
         
         /// <summary>

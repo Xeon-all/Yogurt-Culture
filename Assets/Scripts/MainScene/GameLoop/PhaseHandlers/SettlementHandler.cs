@@ -10,13 +10,15 @@ namespace YogurtCulture.GameLoop
         public override void OnPhaseEnter(GameLoopData data)
         {
             base.OnPhaseEnter(data);
-            // TODO: 显示结算面板、计算当日收入
+            Debug.Log($"=== 今日结算 ===");
+            Debug.Log($"完成订单: {data.ordersCompleted}");
+            Debug.Log($"满意度: {data.satisfaction}");
+            Debug.Log($"今日收入: {data.todayEarnings}");
         }
         
         public override void OnPhaseExit(GameLoopData data)
         {
             base.OnPhaseExit(data);
-            // TODO: 隐藏结算面板
         }
     }
 }

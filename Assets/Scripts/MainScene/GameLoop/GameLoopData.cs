@@ -6,19 +6,34 @@ namespace YogurtCulture.GameLoop
     public class GameLoopData
     {
         public GamePhase currentPhase;
-        public int dayNumber = 1;           // 第几天
-        public float phaseTimer;             // 阶段计时器
-        public float money = 0f;             // 当前金钱
-        public int customersServed = 0;      // 已服务顾客数
-        public float satisfaction = 100f;   // 顾客满意度
-        
-        // 当前阶段持续时间配置（秒）
+        public int dayNumber = 1;
+        public float phaseTimer;
+        public float todayEarnings = 0f;
+        public int ordersCompleted = 0;
+        public float satisfaction = 100f;
+
+        public event System.Action<int, bool> OnOrderCompleted;
+        public event System.Action<float> OnMoneyChanged;
+
+        public void AddOrderCompleted(bool success)
+        {
+            ordersCompleted++;
+            OnOrderCompleted?.Invoke(1, success);
+            if (!success) satisfaction = Mathf.Max(0, satisfaction - 5f);
+        }
+
+        public void AddEarnings(float amount)
+        {
+            todayEarnings += amount;
+            OnMoneyChanged?.Invoke(amount);
+        }
+
         public float GetPhaseDuration(GamePhase phase)
         {
             return phase switch
             {
                 GamePhase.Preparation => 30f,
-                GamePhase.MorningOp => 60f,
+                GamePhase.MorningOp => 90f,
                 GamePhase.NoonBreak => 20f,
                 GamePhase.AfternoonOp => 60f,
                 GamePhase.Settlement => 15f,
