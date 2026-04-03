@@ -3,9 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// 订单完成结果数据结构，供各订阅系统使用。
+/// </summary>
+[Serializable]
+public class OrderResult
+{
+    public OrderManager.Order Order;
+    public bool IsSuccess;
+    public int DemandFlavor;
+    public int ProvidedFlavor;
+    /// <summary>成功时声望增量（已含溢出处理后的余量）</summary>
+    public float ReputationGain;
+    /// <summary>成功时金币奖励</summary>
+    public int GoldReward;
+    /// <summary>成功时等级变化量（0 或正数）</summary>
+    public int LevelChange;
+    /// <summary>失败时声望惩罚（不小于0）</summary>
+    public float ReputationLoss;
+}
+
 public class OrderManager : Singleton<OrderManager>
 {
     public enum Difficulty { Low, Mid, High }
+
+    /// <summary>
+    /// 订单完成时发布。订阅者：ReputationSystem / MoneySystem / GameLoop。
+    /// </summary>
+    public event Action<OrderResult> OnOrderCompleted;
 
     [Serializable]
     public class Order
@@ -343,6 +368,96 @@ public class OrderManager : Singleton<OrderManager>
     {
         return new List<TagData>();
     }
+
+    #region 订单完成发布
+
+    private const float LEVEL_BASE_COST = 50f;
+    private const float LEVEL_MULTIPLIER = 1.5f;
+
+    /// <summary>
+    /// 获取指定等级所需的声望值。
+    /// </summary>
+    public static float GetExpForLevel(int level)
+    {
+        if (level <= 1) return LEVEL_BASE_COST;
+        float cost = LEVEL_BASE_COST;
+        for (int i = 2; i < level; i++)
+            cost = Mathf.Floor(cost * LEVEL_MULTIPLIER + LEVEL_BASE_COST);
+        return cost;
+    }
+
+    /// <summary>
+    /// 由 OrderEntity 在提交时调用，计算奖励/惩罚后发布结果。
+    /// 奖励计算只在此处发生一次，各系统只消费，不重复计算。
+    /// </summary>
+    public void PublishOrderResult(
+        Order order,
+        bool success,
+        int demandFlavor,
+        int providedFlavor)
+    {
+        var result = new OrderResult
+        {
+            Order = order,
+            IsSuccess = success,
+            DemandFlavor = demandFlavor,
+            ProvidedFlavor = providedFlavor
+        };
+
+        if (success)
+        {
+            result.GoldReward = order.Price;
+            result.ReputationGain = CalculateSuccessReputation(order.Difficulty, demandFlavor, providedFlavor, out int levelUps);
+            result.LevelChange = levelUps;
+        }
+        else
+        {
+            result.ReputationLoss = Mathf.Max(0, (demandFlavor - providedFlavor) * 2);
+        }
+
+        OnOrderCompleted?.Invoke(result);
+    }
+
+    /// <summary>
+    /// 计算成功时的声望增量及升级次数。
+    /// </summary>
+    private float CalculateSuccessReputation(
+        Difficulty difficulty,
+        int demandFlavor,
+        int providedFlavor,
+        out int levelUps)
+    {
+        int basePoints = difficulty switch
+        {
+            Difficulty.Low => 2,
+            Difficulty.Mid => 3,
+            Difficulty.High => 4,
+            _ => 2
+        };
+
+        int baseRep = basePoints * 3;
+        int extraFlavor = Mathf.Max(0, providedFlavor - demandFlavor);
+        int bonusRep = extraFlavor * 2;
+        float totalRep = baseRep + bonusRep;
+
+        // 计算升级次数：溢出部分保留为余量
+        levelUps = 0;
+        int currentLevel = ReputationSystem.Instance != null
+            ? ReputationSystem.Instance.CurrentLevel
+            : 1;
+        float expNeeded = GetExpForLevel(currentLevel + 1);
+
+        while (totalRep >= expNeeded)
+        {
+            totalRep -= expNeeded;
+            levelUps++;
+            expNeeded = GetExpForLevel(currentLevel + levelUps + 1);
+        }
+
+        return totalRep;
+    }
+
+    #endregion
 
     /// <summary>
     /// OrderEntity 提交成功后调用，清空指定槽位并通知外部。

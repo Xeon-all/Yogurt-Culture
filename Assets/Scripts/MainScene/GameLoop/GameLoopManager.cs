@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace YogurtCulture.GameLoop
@@ -41,6 +42,7 @@ namespace YogurtCulture.GameLoop
         
         [Header("准备阶段")]
         [SerializeField] private List<GameObject> preparationUI;
+        [SerializeField] public List<UnityEvent> preparationAction;
         [Header("经营阶段")]
         [SerializeField] public GameObject npcManager;
         private int _currentPhaseIndex;
@@ -89,6 +91,7 @@ namespace YogurtCulture.GameLoop
         /// </summary>
         public void TransitionTo(GamePhase targetPhase)
         {
+            Debug.Log($"from phase {CurrentPhase} to {targetPhase}");
             // 退出旧阶段（Init 为初始阶段，不执行退出）
             if (_currentPhase != GamePhase.Init || targetPhase != GamePhase.Preparation)
             {

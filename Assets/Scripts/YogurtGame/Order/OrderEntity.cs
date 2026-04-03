@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -149,24 +150,63 @@ public class OrderEntity : MonoBehaviour
         return string.Join(", ", tags.ConvertAll(t => $"{t.Tag}(实际:{t.Value})"));
     }
 
-        private void OnSubmitSuccess(YogurtData yogurt)
+    private void OnSubmitSuccess(YogurtData yogurt)
+    {
+        int providedFlavor = CalculateProvidedFlavor(yogurt);
+        StartCoroutine(DissolveAndDestroy(true, yogurt.gameObject, providedFlavor));
+    }
+
+    private void OnSubmitFail()
+    {
+        StartCoroutine(DissolveAndDestroy(false, null, 0));
+    }
+
+    private IEnumerator DissolveAndDestroy(bool success, GameObject yogurtObj, int providedFlavor)
+    {
+        float duration = 0.3f;
+        float elapsed = 0f;
+        gameObject.GetComponent<Collider2D>().enabled = false;
+        foreach(Transform child in transform) Destroy(child.gameObject);
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        while (elapsed < duration)
         {
-            var earnings = orderData.Price;
-            GameLoopData data = null;
-            if (GameLoopManager.Instance != null) data = GameLoopManager.Instance.Data;
-            if (data != null) data.AddEarnings(earnings);
-            
-            EconomyManager.Instance?.AddMoney(orderData.Price);
-            GameLoopManager.Instance?.Data.AddOrderCompleted(true);
-            Destroy(yogurt.gameObject);
-            OrderManager.Instance?.ClearSlot(orderData.SlotIndex);
-            Destroy(gameObject);
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            if (sr != null)
+            {
+                sr.material.SetFloat("_DissolveAmount", Mathf.LerpUnclamped(-1f, 2f, t));
+            }
+            yield return null;
         }
 
-        private void OnSubmitFail()
+        if (sr != null)
         {
-            GameLoopManager.Instance?.Data.AddOrderCompleted(false);
-            Destroy(gameObject);
-            OrderManager.Instance?.ClearSlot(orderData.SlotIndex);
+            sr.material.SetFloat("_DissolveAmount", 2f);
         }
+
+        if (success)
+        {
+            Destroy(yogurtObj);
+        }
+
+        int demandFlavor = orderData.FlavorExpec;
+        OrderManager.Instance.PublishOrderResult(orderData, success, demandFlavor, providedFlavor);
+        OrderManager.Instance.ClearSlot(orderData.SlotIndex);
+        Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// 从 yogurt 的风味标签中计算提供风味值总量。
+    /// </summary>
+    private int CalculateProvidedFlavor(YogurtData yogurt)
+    {
+        if (yogurt == null) return 0;
+        var tags = yogurt.GetIngredientTags();
+        if (tags == null) return 0;
+        int total = 0;
+        foreach (var tag in tags)
+            total += Mathf.RoundToInt(tag.Value);
+        return total;
+    }
 }

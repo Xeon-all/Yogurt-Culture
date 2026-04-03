@@ -1,56 +1,57 @@
 using UnityEngine;
 using UnityEngine.UI;
+using YogurtCulture.GameLoop;
 
-namespace YogurtCulture.GameLoop
+public class MorningOpHandler : PhaseHandlerBase
 {
-    public class MorningOpHandler : PhaseHandlerBase
+    public override GamePhase Phase => GamePhase.MorningOp;
+    public override float Duration => 30f;
+    public Image tempTimerUI;
+
+    private GameLoopData _data;
+
+    public override void OnPhaseEnter(GameLoopData data)
     {
-        public override GamePhase Phase => GamePhase.MorningOp;
-        public override float Duration => 10f;
-        public Image tempTimerUI;
+        base.OnPhaseEnter(data);
+        _data = data;
+        data.todayEarnings = 0f;
+        data.ordersCompleted = 0;
+        data.satisfaction = 100f;
 
-        public override void OnPhaseEnter(GameLoopData data)
-        {
-            base.OnPhaseEnter(data);
-            data.todayEarnings = 0f;
-            data.ordersCompleted = 0;
-            data.satisfaction = 100f;
+        OrderManager.Instance.OnOrderCompleted += OnOrderCompleted;
 
-            data.OnOrderCompleted += OnOrderCompleted;
-            data.OnMoneyChanged += OnMoneyChanged;
+        OrderManager.Instance.ResetAutoAddTimer();
+        OrderManager.Instance.TriggerInitialOrder();
+        OrderManager.Instance.OnAutoAddTick += () => OrderManager.Instance.TempAddOrder();
+    }
 
-            OrderManager.Instance.ResetAutoAddTimer();
-            OrderManager.Instance.TriggerInitialOrder();
-            OrderManager.Instance.OnAutoAddTick += () => OrderManager.Instance.TempAddOrder();
-        }
+    public override void OnPhaseUpdate(GameLoopData data, float deltaTime)
+    {
+        base.OnPhaseUpdate(data, deltaTime);
+        tempTimerUI.fillAmount = 1f - phaseTimer / Duration;
+        if (Duration <= phaseTimer) GameLoopManager.Instance.TransitToNext();
+    }
 
-        public override void OnPhaseUpdate(GameLoopData data, float deltaTime)
-        {
-            base.OnPhaseUpdate(data, deltaTime);
-            tempTimerUI.fillAmount = 1f - phaseTimer / Duration;
-            if (Duration <= phaseTimer) GameLoopManager.Instance.TransitToNext();
-        }
+    public override void OnPhaseExit(GameLoopData data)
+    {
+        base.OnPhaseExit(data);
+        OrderManager.Instance.OnOrderCompleted -= OnOrderCompleted;
 
-        public override void OnPhaseExit(GameLoopData data)
-        {
-            base.OnPhaseExit(data);
-            data.OnOrderCompleted -= OnOrderCompleted;
-            data.OnMoneyChanged -= OnMoneyChanged;
+        OrderManager.Instance.OnAutoAddTick -= OrderManager.Instance.TempAddOrder;
+        var manager = GameLoopManager.Instance.npcManager;
+        manager.GetComponent<NpcManager>().ClearAllNpcs();
+        manager.SetActive(false);
 
-            OrderManager.Instance.OnAutoAddTick -= OrderManager.Instance.TempAddOrder;
-            var manager = GameLoopManager.Instance.npcManager;
-            manager.GetComponent<NpcManager>().ClearAllNpcs();
-            manager.SetActive(false);
-        }
+        _data = null;
+    }
 
-        private void OnOrderCompleted(int delta, bool success)
-        {
-            Debug.Log($"[统计] 完成订单 +{delta} (成功: {success})");
-        }
+    private void OnOrderCompleted(OrderResult result)
+    {
+        if (_data == null) return;
+        _data.ordersCompleted++;
+        _data.todayEarnings += result.GoldReward;
+        if (!result.IsSuccess) _data.satisfaction = Mathf.Max(0, _data.satisfaction - 5f);
 
-        private void OnMoneyChanged(float amount)
-        {
-            Debug.Log($"[统计] 收入 +{amount}");
-        }
+        Debug.Log($"[统计] 订单完成 (成功: {result.IsSuccess})");
     }
 }
