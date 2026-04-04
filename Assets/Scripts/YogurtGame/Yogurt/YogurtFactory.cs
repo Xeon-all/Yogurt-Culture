@@ -93,8 +93,8 @@ public class YogurtFactory : Singleton<YogurtFactory>
             Debug.LogError("[YogurtFactory] YogurtBase has no prefab bound. Cannot instantiate.");
             return null;
         }
-
-        var instance = Object.Instantiate(prefab, position, Quaternion.identity, parent);
+        AudioManager.Instance.PlaySFX("yogurtSpawn");
+        var instance = Instantiate(prefab, position, Quaternion.identity, parent);
         var yogurtInstance = instance.GetComponent<YogurtInstance>();
 
         var targetData = instance.GetComponent<YogurtData>();

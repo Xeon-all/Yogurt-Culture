@@ -139,6 +139,7 @@ public class OrderEntity : MonoBehaviour
     private void OnSubmitSuccess(YogurtData yogurt)
     {
         int providedFlavor = CalculateProvidedFlavor(yogurt);
+        OrderManager.Instance.OrderSuccess(transform.parent.position);
         StartCoroutine(DissolveAndDestroy(true, yogurt.gameObject, providedFlavor));
     }
 
@@ -149,7 +150,7 @@ public class OrderEntity : MonoBehaviour
 
     private IEnumerator DissolveAndDestroy(bool success, GameObject yogurtObj, int providedFlavor)
     {
-        OrderManager.Instance.OrderHandOver(transform.parent.position);
+        // OrderManager.Instance.OrderHandOver(transform.parent.position);
         float duration = 0.3f;
         float elapsed = 0f;
         gameObject.GetComponent<Collider2D>().enabled = false;

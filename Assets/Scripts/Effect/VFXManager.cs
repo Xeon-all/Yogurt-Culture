@@ -25,13 +25,13 @@ public class VFXManager : Singleton<VFXManager>
 
     private void OnEnable()
     {
-        OrderManager.Instance.OnOrderHandover += PlayCoinEffect;
+        OrderManager.Instance.OnOrderSuccess += PlayCoinEffect;
     }
 
     private void OnDisable()
     {
-        if(OrderManager.Instance.enabled)
-            OrderManager.Instance.OnOrderHandover -= PlayCoinEffect;
+        if(OrderManager.Instance)
+            OrderManager.Instance.OnOrderSuccess -= PlayCoinEffect;
     }
 
     private void PlayCoinEffect(Vector2 pos)

@@ -32,6 +32,7 @@ public class OrderManager : Singleton<OrderManager>
     /// </summary>
     public event Action<OrderResult> OnOrderCompleted;
     public event Action<Vector2> OnOrderHandover;
+    public event Action<Vector2> OnOrderSuccess;
 
     [Serializable]
     public class Order
@@ -349,6 +350,8 @@ public class OrderManager : Singleton<OrderManager>
         Order newOrder = AppendOrderData();
         if (newOrder == null) return null;
 
+        AudioManager.Instance.PlaySFX("orderSpawn");
+
         SpawnOrderEntity(newOrder);
         return newOrder;
     }
@@ -404,7 +407,11 @@ public class OrderManager : Singleton<OrderManager>
     }
     public void OrderHandOver(Vector2 pos)
     {
-        OnOrderHandover.Invoke(pos);
+        OnOrderHandover?.Invoke(pos);
+    }
+    public void OrderSuccess(Vector2 pos)
+    {
+        OnOrderSuccess?.Invoke(pos);
     }
     /// <summary>
     /// 由 OrderEntity 在提交时调用，计算奖励/惩罚后发布结果。
