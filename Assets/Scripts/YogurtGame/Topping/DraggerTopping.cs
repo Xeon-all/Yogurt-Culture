@@ -20,6 +20,7 @@ public class DraggerTopping : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        CursorManager.Instance.SetCursor(CursorData.CursorType.Default, unlock: true);
         Collider2D selfCollider = GetComponent<Collider2D>();
         ContactFilter2D filter = new ContactFilter2D { useTriggers = true };
         Collider2D[] results = new Collider2D[4];

@@ -28,8 +28,9 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
     
     #region Tooltip
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public override void OnPointerEnter(PointerEventData eventData)
     {
+        base.OnPointerEnter(eventData);
         if (Topping == null || 
             GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation) 
             return;
@@ -37,8 +38,9 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
         _tooltipCoroutine = StartCoroutine(ShowTooltipAfterDelay());
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    public override void OnPointerExit(PointerEventData eventData)
     {
+        base.OnPointerExit(eventData);
         CancelAndHideTooltip();
     }
 

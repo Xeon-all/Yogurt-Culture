@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -94,18 +94,16 @@ public class YogurtData : MonoBehaviour
     [Header("配料标签")]
     [SerializeField] private List<TagData> ingredientTags = new();
 
-    [Header("口味")]
-    [SerializeField] private float flavor = 0f;
+    [SerializeField] private int extraFlavor = 0;
+    public int Exflavor => extraFlavor;
 
     /// <summary>
-    /// 获取口味值（int）
+    /// 添加配料带来的附加风味值
     /// </summary>
-    public int FlavorInt => Mathf.RoundToInt(flavor);
-
-    /// <summary>
-    /// 获取口味值（float）
-    /// </summary>
-    public float FlavorFloat => flavor;
+    public void AddExtraFlavor(int amount)
+    {
+        extraFlavor += amount;
+    }
 
     public void SetIngredients(IList<YogurtBase> newIngredients)
     {
@@ -131,18 +129,8 @@ public class YogurtData : MonoBehaviour
     /// </summary>
     public void Clear()
     {
-        flavor = 0f;
+        extraFlavor = 0;
         ingredientTags.Clear();
-    }
-
-    public void SetFlavor(float value)
-    {
-        flavor = value;
-    }
-
-    public float GetFlavor()
-    {
-        return flavor;
     }
 
     /// <summary>

@@ -57,11 +57,6 @@ public class YogurtFactory : Singleton<YogurtFactory>
             Destroy(instance);
             return;
         }
-
-        activeYogurt.OnReceiveTopping += () =>
-        {
-            var data = activeYogurt.GetComponent<YogurtData>();
-        };
     }
 
     /// <summary>
@@ -105,7 +100,7 @@ public class YogurtFactory : Singleton<YogurtFactory>
         var targetData = instance.GetComponent<YogurtData>();
         if (targetData != null && yogurtData != null)
         {
-            targetData.SetFlavor(yogurtData.FlavorInt);
+            targetData.AddExtraFlavor(yogurtData.Exflavor);
             foreach (var tag in yogurtData.GetIngredientTags())
             {
                 targetData.AddTag(tag);

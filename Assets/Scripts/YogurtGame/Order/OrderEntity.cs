@@ -115,25 +115,12 @@ public class OrderEntity : MonoBehaviour
 
     private bool Match(YogurtData yogurt)
     {
-        if (orderData == null || yogurt == null) return false;
-
-        List<TagData> demandTags = orderData.DemandTags ?? new();
-        if (demandTags.Count == 0) return false;
-
-        float totalDemandValue = 0f;
-        float dotProduct = 0f;
-
-        foreach (TagData demand in demandTags)
-        {
-            totalDemandValue += demand.Value;
-            dotProduct += demand.Value * yogurt.GetTagValue(demand.Tag);
-        }
-
+        int matchFlavor = CalculateProvidedFlavor(yogurt);
         // 打印计算详情
         Debug.Log($"酸奶实际参数: {FormatYogurtTags(yogurt)}\n" +
-                  $"累计需求值（dotProduct）: {dotProduct}，需求阈值（totalDemandValue）: {totalDemandValue}，结果: {dotProduct >= totalDemandValue}");
+                  $"累计需求值（dotProduct）: {matchFlavor}，需求阈值（totalDemandValue）: {orderData.FlavorExpec}，结果: {matchFlavor >= orderData.FlavorExpec}");
 
-        return dotProduct >= totalDemandValue;
+        return matchFlavor >= orderData.FlavorExpec;
     }
 
     private string FormatDemandTags(List<TagData> tags)
@@ -197,16 +184,22 @@ public class OrderEntity : MonoBehaviour
     }
 
     /// <summary>
-    /// 从 yogurt 的风味标签中计算提供风味值总量。
+    /// 从 yogurt 计算含附加风味值的总风味量。
     /// </summary>
     private int CalculateProvidedFlavor(YogurtData yogurt)
     {
         if (yogurt == null) return 0;
-        var tags = yogurt.GetIngredientTags();
-        if (tags == null) return 0;
-        int total = 0;
-        foreach (var tag in tags)
-            total += Mathf.RoundToInt(tag.Value);
-        return total;
+        if (orderData == null || yogurt == null) return 0;
+
+        List<TagData> demandTags = orderData.DemandTags ?? new();
+        if (demandTags.Count == 0) return 0;
+
+        int dotProduct = 0;
+
+        foreach (TagData demand in demandTags)
+        {
+            dotProduct += demand.Value * yogurt.GetTagValue(demand.Tag);
+        }
+        return dotProduct + yogurt.Exflavor;
     }
 }

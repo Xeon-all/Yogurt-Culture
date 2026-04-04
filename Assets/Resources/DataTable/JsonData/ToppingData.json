@@ -98,55 +98,5 @@
     "DraggerName": "BaseDragger",
     "GrooveName": "Default",
     "color": "#558B2F"
-  },
-  {
-    "ID": "test9",
-    "Name": "",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": "",
-    "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
-    "color": "#bbbbbb"
-  },
-  {
-    "ID": "test10",
-    "Name": "",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": "",
-    "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
-    "color": "#cccccc"
-  },
-  {
-    "ID": "test11",
-    "Name": "",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": "",
-    "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
-    "color": "#dddddd"
-  },
-  {
-    "ID": "test12",
-    "Name": "",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": "",
-    "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
-    "color": "#eeeeee"
-  },
-  {
-    "ID": "test13",
-    "Name": "",
-    "ExFlavor": 0,
-    "capability": 10,
-    "Tags": "",
-    "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
-    "color": "#ffffff"
   }
 ]

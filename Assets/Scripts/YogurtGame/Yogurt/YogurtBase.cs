@@ -19,9 +19,10 @@ public class YogurtBase : MonoBehaviour, IReceiveTopping
     /// <summary>
     /// 当前口味值（只读）
     /// </summary>
-    public int Flavor => GetComponent<YogurtData>()?.FlavorInt ?? 0;
+    public int Flavor => Mathf.RoundToInt(GetComponent<YogurtData>().Exflavor);
 
     public Action OnReceiveTopping;
+
     /// <summary>
     /// 调整口味值（可以为正或负）
     /// </summary>
@@ -30,19 +31,9 @@ public class YogurtBase : MonoBehaviour, IReceiveTopping
         var yogurtData = GetComponent<YogurtData>();
         if (yogurtData == null) return;
 
-        yogurtData.SetFlavor(yogurtData.FlavorInt + delta);
+        yogurtData.AddExtraFlavor(delta);
     }
 
-    /// <summary>
-    /// 直接设置口味值
-    /// </summary>
-    public void SetFlavor(int value)
-    {
-        var yogurtData = GetComponent<YogurtData>();
-        if (yogurtData == null) return;
-
-        yogurtData.SetFlavor(value);
-    }
 
     #region IReceiveTopping 实现
 
@@ -55,6 +46,8 @@ public class YogurtBase : MonoBehaviour, IReceiveTopping
 
         var yogurtData = GetComponent<YogurtData>();
         if (yogurtData == null) return;
+
+        yogurtData.AddExtraFlavor(topping.ExFlavor);
 
         var tags = YogurtData.ParseTags(topping.Tags);
         foreach (var tag in tags)
