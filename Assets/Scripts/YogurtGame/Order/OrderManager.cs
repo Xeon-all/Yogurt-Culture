@@ -31,6 +31,7 @@ public class OrderManager : Singleton<OrderManager>
     /// 订单完成时发布。订阅者：ReputationSystem / MoneySystem / GameLoop。
     /// </summary>
     public event Action<OrderResult> OnOrderCompleted;
+    public event Action<Vector2> OnOrderHandover;
 
     [Serializable]
     public class Order
@@ -401,7 +402,10 @@ public class OrderManager : Singleton<OrderManager>
             cost = Mathf.Floor(cost * LEVEL_MULTIPLIER + LEVEL_BASE_COST);
         return cost;
     }
-
+    public void OrderHandOver(Vector2 pos)
+    {
+        OnOrderHandover.Invoke(pos);
+    }
     /// <summary>
     /// 由 OrderEntity 在提交时调用，计算奖励/惩罚后发布结果。
     /// 奖励计算只在此处发生一次，各系统只消费，不重复计算。

@@ -97,7 +97,6 @@ public class OrderEntity : MonoBehaviour
     public void TrySubmit(YogurtData yogurt)
     {
         if (yogurt == null) return;
-
         Debug.Log($"[OrderEntity] ========== 订单提交判定 ==========\n" +
                   $"订单需求: {FormatDemandTags(orderData?.DemandTags)}");
 
@@ -150,6 +149,7 @@ public class OrderEntity : MonoBehaviour
 
     private IEnumerator DissolveAndDestroy(bool success, GameObject yogurtObj, int providedFlavor)
     {
+        OrderManager.Instance.OrderHandOver(transform.parent.position);
         float duration = 0.3f;
         float elapsed = 0f;
         gameObject.GetComponent<Collider2D>().enabled = false;
