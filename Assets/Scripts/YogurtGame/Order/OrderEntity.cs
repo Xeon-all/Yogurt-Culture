@@ -140,6 +140,7 @@ public class OrderEntity : MonoBehaviour
     {
         int providedFlavor = CalculateProvidedFlavor(yogurt);
         OrderManager.Instance.OrderSuccess(transform.parent.position);
+        AudioManager.Instance.PlaySFX("orderSuccess");
         StartCoroutine(DissolveAndDestroy(true, yogurt.gameObject, providedFlavor));
     }
 
