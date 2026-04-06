@@ -3,16 +3,23 @@ using UnityEngine.EventSystems;
 
 public class DraggerTopping : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [SerializeField] public ToppingData toppingData;
+    [SerializeField] public ToppingItem Item;
 
-    public void SetData(ToppingData data)
+    private bool _received;
+    private SpawnDragger source;
+    public void SetSource(SpawnDragger spawner) => source = spawner;
+
+    public void SetData(ToppingItem item)
     {
-        toppingData = data;
+        Item = new ToppingItem(item.Data, item.Count);
+        _received = false;
     }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         eventData.pointerDrag = gameObject;
     }
+
     public void OnDrag(PointerEventData eventData)
     {
         transform.position = GetWorldPosition(eventData.position);
@@ -21,14 +28,31 @@ public class DraggerTopping : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     public void OnEndDrag(PointerEventData eventData)
     {
         CursorManager.Instance.SetCursor(CursorData.CursorType.Default, unlock: true);
+        _received = false;
+
         Collider2D selfCollider = GetComponent<Collider2D>();
         ContactFilter2D filter = new ContactFilter2D { useTriggers = true };
         Collider2D[] results = new Collider2D[4];
         selfCollider.OverlapCollider(filter, results);
+
         foreach (var col in results)
         {
-            col?.GetComponent<IReceiveTopping>()?.ReceiveTopping(toppingData);
+            if (col == null) continue;
+            var receiver = col.GetComponent<IReceiveTopping>();
+            if (receiver != null)
+            {
+                receiver.ReceiveTopping(Item);
+                _received = true;
+                break;
+            }
         }
+
+        if (!_received)
+        {
+            Debug.Log($"[DraggerTopping] 未被接收，归还 {Item.Count} 个 {Item.Data.ID}");
+            source.RestoreTopping(Item);
+        }
+
         Destroy(gameObject);
     }
 

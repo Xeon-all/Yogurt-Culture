@@ -37,19 +37,20 @@ public class YogurtBase : MonoBehaviour, IReceiveTopping
 
     #region IReceiveTopping 实现
 
-    public void ReceiveTopping(ToppingData topping)
+    public void ReceiveTopping(ToppingItem item)
     {
-        if (topping == null) return;
+        if (item?.Data == null) return;
 
         var yogurtData = GetComponent<YogurtData>();
         if (yogurtData == null) return;
 
-        yogurtData.AddExtraFlavor(topping.ExFlavor);
+        int count = item.Count;
+        yogurtData.AddExtraFlavor(item.Data.ExFlavor * count);
 
-        var tags = YogurtData.ParseTags(topping.Tags);
+        var tags = YogurtData.ParseTags(item.Data.Tags);
         foreach (var tag in tags)
         {
-            yogurtData.AddTag(tag);
+            yogurtData.AddTag(new TagData(tag.Tag, tag.Value * count));
         }
         OnReceiveTopping?.Invoke();
     }

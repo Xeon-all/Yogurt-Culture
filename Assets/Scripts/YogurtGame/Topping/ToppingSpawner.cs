@@ -1,12 +1,9 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using YogurtCulture.GameLoop;
 
-/// <summary>
-/// Topping生成器：从操作台鼠标按下后生成Topping实体并跟随鼠标
-/// 将此脚本挂载到操作台的GameObject上
-/// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHandler,
     IReceiveTopping
@@ -22,17 +19,17 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
 
     void Awake()
     {
-        sr = gameObject.GetComponent<SpriteRenderer>();
+        sr = GetComponent<SpriteRenderer>();
         sr.sprite = null;
     }
-    
+
     #region Tooltip
 
     public override void OnPointerEnter(PointerEventData eventData)
     {
         base.OnPointerEnter(eventData);
-        if (Topping == null || 
-            GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation) 
+        if (Item?.Data == null ||
+            GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
             return;
 
         _tooltipCoroutine = StartCoroutine(ShowTooltipAfterDelay());
@@ -48,11 +45,13 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
     {
         yield return new WaitForSeconds(tooltipDelay);
 
-        var tagDatas = YogurtData.ParseTags(Topping.Tags);
-        if (tagDatas == null || tagDatas.Count == 0) yield break;
+        if (Item?.Data == null) yield break;
+        var tagDatas = YogurtData.ParseTags(Item.Data.Tags);
+        if (tagDatas.Count == 0) yield break;
 
         string content = string.Join("\n", tagDatas.ConvertAll(t => $"{t.Tag}({t.Value})"));
         TooltipManager.Instance.Show(content, transform, tooltipOffset);
+        Debug.Log("Content Item count : " + Item.Count);
     }
 
     private void CancelAndHideTooltip()
@@ -71,29 +70,66 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
     public override void OnPointerDown(PointerEventData eventData)
     {
         base.OnPointerDown(eventData);
-        if(GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
+        if (GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
             ClearContain();
+    }
+    public override void RestoreTopping(ToppingItem item)
+    {
+        switch(GameLoopManager.Instance.CurrentPhase)
+        {
+            case GamePhase.Preparation:
+                YogurtGameBoard.Instance.RestoreTopping(item);
+                break;
+            case GamePhase.MorningOp:
+                Item.Count += item.Count;
+                break;
+            default: break;
+        }
+            
+    }
+    protected override ToppingItem ConstructItem()
+    {
+        switch(GameLoopManager.Instance.CurrentPhase)
+        {
+            case GamePhase.Preparation: return Item;
+            case GamePhase.MorningOp:
+                Item.Count -= 1;
+                return new ToppingItem(Item.Data, 1);
+            default: break;
+        }
+        return null;
     }
     #endregion
 
     #region IReceiveTopping
 
-    /// <summary>
-    /// 接收 Dragger 释放时传入的 ToppingData。
-    /// </summary>
-    public void ReceiveTopping(ToppingData topping)
+    public void ReceiveTopping(ToppingItem item)
     {
-        // Debug.Log("receiving ID : " + topping.ID);
+        if (item?.Data == null) return;
+
         if(GameLoopManager.Instance.CurrentPhase != GamePhase.Preparation) return;
-        ChangeToTopping(topping);
-        Topping = topping;
+        ApplyVisual(item.Data);
+        Item = item;
+
+        Debug.Log($"[ReceiveTopping] id={item.Data.ID}, rawCount={item.Count}");
+
+        // if (GameLoopManager.Instance.CurrentPhase == GamePhase.MorningOp && item.Count > 1)
+        // {
+        //     // int restore = item.Count - 1;
+        //     item.Count = 1;
+        //     YogurtGameBoard.Instance.RestoreTopping(item);
+        //     Debug.Log($"[ReceiveTopping] MorningOp 归还 {item.Count} 个");
+        // }
+
+        // if (GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
+        // {
+        //     ApplyVisual(item.Data);
+        //     Item = item;
+        // }
     }
 
-    /// <summary>
-    /// 将 Topping 转化为桌面配料并处理视觉表现。
-    /// </summary>
     private const string SPRITEPATH = "Art/Yogurt/Topping/";
-    private void ChangeToTopping(ToppingData topping)
+    private void ApplyVisual(ToppingData topping)
     {
         sr.sprite = Resources.Load<Sprite>(SPRITEPATH + topping.GrooveName);
         ColorUtility.TryParseHtmlString(topping.color, out var color);
@@ -105,7 +141,6 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
     {
         sr.sprite = null;
         sr.color = Color.white;
-        Topping = null;
+        Item = null;
     }
 }
-

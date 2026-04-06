@@ -8,13 +8,14 @@ public class UIMovementController : MonoBehaviour {
     [SerializeField] private float duration = 0.3f;
     [SerializeField] private Vector2 moveBy;
     private Vector2 _hidePos;
-    private Vector2 _showPos;
+    [SerializeField] private Vector2 _showPos = Vector2.zero;
     private float _progress;
     private bool _isAnimating;
     private Coroutine _coroutine;
     void Awake()
     {
-        _showPos = transform.position;
+        // _showPos = transform.position;
+        // Debug.Log("stored pos : " + _showPos);
         _hidePos = _showPos + moveBy;
     }
 
@@ -47,6 +48,7 @@ public class UIMovementController : MonoBehaviour {
     }
 
     private System.Collections.IEnumerator Animate(Vector2 start, Vector2 end) {
+        // Debug.Log("Actual dst : " + end);
         while (_isAnimating && _progress < 1f) {
             _progress += Time.deltaTime / duration;
             float t = moveCurve.Evaluate(Mathf.Clamp01(_progress));

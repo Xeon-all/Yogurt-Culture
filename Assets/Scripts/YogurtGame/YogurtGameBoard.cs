@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Excel2Unity;
 using System.Linq;
+using YogurtCulture.GameLoop;
 
 /// <summary>
 /// YogurtGameBoard：负责加载和管理经营过程中会用到的数据表缓存。
@@ -27,6 +28,9 @@ public class YogurtGameBoard : MonoBehaviour
     // Topping激活状态: id -> isActive
     private readonly Dictionary<string, bool> _toppingActiveCache =
         new(StringComparer.OrdinalIgnoreCase);
+
+    // Topping 运行时数据仓库
+    [SerializeField] private ToppingDataBase toppingDataBase = new();
 
     private void Awake()
     {
@@ -111,6 +115,9 @@ public class YogurtGameBoard : MonoBehaviour
 
         // 初始化所有 Topping 为未激活状态
         InitializeToppingActiveStatus();
+
+        // 初始化所有 Topping 运行时数量（默认 10）
+        toppingDataBase.InitializeAll(10);
     }
 
     /// <summary>
@@ -230,6 +237,46 @@ public class YogurtGameBoard : MonoBehaviour
         _cache.TryGetValue("Topping", out var table);
         return (ToppingData)table[name];
     }
+
+    #region Topping 运行时数量 API
+
+    public int GetToppingCount(string id)
+    {
+        return toppingDataBase?.GetCount(id) ?? 0;
+    }
+
+    public ToppingItem GetToppingItem(string id)
+    {
+        return toppingDataBase?.GetItem(id);
+    }
+
+    public void ConsumeTopping(string id, int amount = 1)
+    {
+        toppingDataBase?.Consume(id, amount);
+        PreparationUI ui;
+        ui = GameLoopManager.Instance.GetPreparationUI().
+            Find(item => item.GetComponent<PreparationUI>()).GetComponent<PreparationUI>();
+        ui.RefreshDisplay();
+    }
+
+    public void RestoreTopping(ToppingItem item)
+    {
+        toppingDataBase?.Restore(item);
+        if(GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
+        {
+            PreparationUI ui;
+            ui = GameLoopManager.Instance.GetPreparationUI().
+                Find(item => item.GetComponent<PreparationUI>()).GetComponent<PreparationUI>();
+            ui.RefreshDisplay();
+        }
+    }
+
+    public bool IsToppingAvailable(string id)
+    {
+        return toppingDataBase?.IsAvailable(id) ?? false;
+    }
+
+    #endregion
 
     private static string ToShortTableName(string tableName)
     {

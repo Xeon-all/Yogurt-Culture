@@ -18,7 +18,7 @@ public class PreparationUI : MonoBehaviour
     [SerializeField] private Button nextPageButton;
     [SerializeField] private Text pageInfoText;
 
-    private List<ToppingData> _toppingList = new();
+    private List<ToppingItem> _toppingList = new();
     private int _currentPage = 0;
     private int _totalPages = 0;
     private int _itemsPerPage;
@@ -33,11 +33,38 @@ public class PreparationUI : MonoBehaviour
         SetupButtons();
         ShowPage(0);
     }
+    public void RefreshDisplay(int pageIndex = -1)
+    {
+        if(pageIndex == -1) pageIndex = _currentPage;
+        int startIndex = pageIndex * _itemsPerPage;
+        int endIndex = Mathf.Min(startIndex + _itemsPerPage, _toppingList.Count);
 
+        for (int i = startIndex; i < endIndex; i++)
+        {
+            int localIndex = i - startIndex;
+            RectTransform anchor = _anchors[localIndex];
+
+            GameObject item = Instantiate(itemPrefab, anchor);
+            RectTransform itemRect = item.GetComponent<RectTransform>();
+            itemRect.anchoredPosition = Vector2.zero;
+            itemRect.anchorMin = Vector2.zero;
+            itemRect.anchorMax = Vector2.one;
+            itemRect.sizeDelta = Vector2.zero;
+            itemRect.pivot = new Vector2(0.5f, 0.5f);
+
+            _instantiatedItems.Add(item);
+            SetupItem(item, _toppingList[i]);
+        }
+    }
     private void LoadToppingData()
     {
         _toppingList.Clear();
-        _toppingList.AddRange(YogurtGameBoard.Instance.GetAllActiveToppings());
+        var allToppings = YogurtGameBoard.Instance.GetAllActiveToppings();
+        foreach (var topping in allToppings)
+        {
+            if (topping == null || string.IsNullOrWhiteSpace(topping.ID)) continue;
+            _toppingList.Add(YogurtGameBoard.Instance.GetToppingItem(topping.ID));
+        }
     }
 
     private void CollectAnchors()
@@ -74,25 +101,7 @@ public class PreparationUI : MonoBehaviour
 
         ClearItems();
 
-        int startIndex = pageIndex * _itemsPerPage;
-        int endIndex = Mathf.Min(startIndex + _itemsPerPage, _toppingList.Count);
-
-        for (int i = startIndex; i < endIndex; i++)
-        {
-            int localIndex = i - startIndex;
-            RectTransform anchor = _anchors[localIndex];
-
-            GameObject item = Instantiate(itemPrefab, anchor);
-            RectTransform itemRect = item.GetComponent<RectTransform>();
-            itemRect.anchoredPosition = Vector2.zero;
-            itemRect.anchorMin = Vector2.zero;
-            itemRect.anchorMax = Vector2.one;
-            itemRect.sizeDelta = Vector2.zero;
-            itemRect.pivot = new Vector2(0.5f, 0.5f);
-
-            _instantiatedItems.Add(item);
-            SetupItem(item, _toppingList[i]);
-        }
+        RefreshDisplay(pageIndex);
 
         if (pageInfoText != null)
             pageInfoText.text = $"{pageIndex + 1} / {_totalPages}";
@@ -115,23 +124,11 @@ public class PreparationUI : MonoBehaviour
         _instantiatedItems.Clear();
     }
 
-    private void SetupItem(GameObject item, ToppingData data)
+    private void SetupItem(GameObject item, ToppingItem itemData)
     {
-        var textComponent = item.GetComponentInChildren<TextMeshProUGUI>();
         var dataCache = item.GetComponent<ToppingPreparation>();
-        dataCache.Topping = data;
-        if (textComponent != null)
-        {
-            textComponent.text = data.Name;
-        }
-        else
-        {
-            var legacyText = item.GetComponentInChildren<Text>();
-            if (legacyText != null)
-            {
-                legacyText.text = data.ID;
-            }
-        }
+        dataCache.Item = itemData;
+        dataCache.RefreshCount();
     }
 
     private void OnPrevPage()

@@ -34,13 +34,6 @@ public class EconomyManager : Singleton<EconomyManager>
         OrderManager.Instance.OnOrderCompleted += OnOrderResult;
     }
 
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-        if (OrderManager.Instance != null)
-            OrderManager.Instance.OnOrderCompleted -= OnOrderResult;
-    }
-
     private void OnOrderResult(OrderResult result)
     {
         reputationSystem.HandleOrderResult(result);

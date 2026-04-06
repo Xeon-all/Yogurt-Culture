@@ -1,4 +1,4 @@
 public interface IReceiveTopping
 {
-    void ReceiveTopping(ToppingData topping);
+    void ReceiveTopping(ToppingItem item);
 }
