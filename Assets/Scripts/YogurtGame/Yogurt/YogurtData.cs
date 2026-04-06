@@ -123,10 +123,7 @@ public class YogurtData : MonoBehaviour
     {
         return ingredientTags;
     }
-
-    /// <summary>
-    /// 清空所有数据（口味归零、配料列表清空）
-    /// </summary>
+    
     public void Clear()
     {
         extraFlavor = 0;

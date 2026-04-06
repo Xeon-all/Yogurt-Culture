@@ -37,9 +37,6 @@ public class YogurtBase : MonoBehaviour, IReceiveTopping
 
     #region IReceiveTopping 实现
 
-    /// <summary>
-    /// 接收配料数据（由 IReceiveTopping 接口定义）
-    /// </summary>
     public void ReceiveTopping(ToppingData topping)
     {
         if (topping == null) return;
