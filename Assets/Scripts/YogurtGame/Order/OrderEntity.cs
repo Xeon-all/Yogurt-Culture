@@ -23,6 +23,7 @@ public class OrderEntity : MonoBehaviour
 
     [Tooltip("内容区域根节点（若为空则使用自身）")]
     [SerializeField] private Transform contentRoot;
+    [SerializeField] private float YOffset;
 
     /// <summary>
     /// Manager 在实例化后注入数据。
@@ -79,7 +80,7 @@ public class OrderEntity : MonoBehaviour
             rect.anchorMin = new Vector2(0.5f, 1);
             rect.anchorMax = new Vector2(0.5f, 1);
             rect.pivot = new Vector2(0.5f, 1);
-            rect.anchoredPosition = new Vector2(0, -index * lineSpacing);
+            rect.anchoredPosition = new Vector2(0, -index * lineSpacing + YOffset);
         }
     }
 
