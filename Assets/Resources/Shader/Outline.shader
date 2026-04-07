@@ -1,0 +1,97 @@
+Shader "Hidden/Outline" {
+    Properties {
+        [Space]
+        _MainTex("Texture", 2D) = "white" { }
+        _OutlineColor ("OutlineColor", Color) = (1, 1, 1, 1) //?¨¨¡À?????
+        _OutlineAlpha ("OutlineAlpha", Range(0, 1)) = 1 //?¨¨¡À????¡Â??
+        _OutlinePixelWidth ("OutlinePixelWidth", Int) = 1 //?¨¨¡À???????
+
+        _OutlineDistortTex ("OutlineDistortionTex", 2D) = "white" { }//?¨¨¡À???¡À????????¨´??
+        _OutlineDistortAmount ("OutlineDistortionAmount", Range(0, 2)) = 0.5 //???¨´???¡§?????¨®??????
+        _OutlineDistortTexXSpeed ("OutlineDistortTexXSpeed", Range(-50, 50)) = 5 //???¨´???¡§????X?¨¢????
+        _OutlineDistortTexYSpeed ("OutlineDistortTexYSpeed", Range(-50, 50)) = 5 //???¨´???¡§????Y?¨¢????
+    }
+    SubShader {
+        Tags { "Queue" = "Transparent" }
+        Blend SrcAlpha OneMinusSrcAlpha
+
+        Pass {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "UnityCG.cginc"
+
+            sampler2D _MainTex;
+            float4 _MainTex_TexelSize;//_MainTex???¨ª????????????????
+
+            fixed4 _OutlineColor;
+            float _OutlineAlpha;
+            int _OutlinePixelWidth;
+
+            sampler2D _OutlineDistortTex;
+            float4 _OutlineDistortTex_ST;
+            float _OutlineDistortTexXSpeed, _OutlineDistortTexYSpeed, _OutlineDistortAmount;
+
+            struct appdata {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+            };
+
+            struct v2f {
+                float2 uv : TEXCOORD0;
+                float2 uvOutDistTex : TEXCOORD1;
+                float4 vertex : SV_POSITION;
+            };
+
+            v2f vert(appdata v) {
+                v2f o;
+                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.uvOutDistTex = TRANSFORM_TEX(v.uv, _OutlineDistortTex);//????_OutlineDistortTex????????uv¡Á?¡À¨º
+                o.uv = v.uv;
+                return o;
+            }
+
+
+
+            fixed4 frag(v2f i) : SV_Target {
+                //------Outline------
+                fixed4 col = tex2D(_MainTex, i.uv);//???¡Â???¨ª???????¨´
+                float originalAlpha = col.a;//??????alpha??
+
+                float2 destUv = float2(_OutlinePixelWidth * _MainTex_TexelSize.x, _OutlinePixelWidth * _MainTex_TexelSize.y);//?????¨¨¡À????????????¨®??
+
+                i.uvOutDistTex.x += (_Time * _OutlineDistortTexXSpeed) % 1;//?????¨´???¨ª?????¡À????¡À???????????
+                i.uvOutDistTex.y += (_Time * _OutlineDistortTexYSpeed) % 1;
+
+                //?¡§?????¨´???¨´????r????????¡À??????¨®??????
+                float outDistortAmnt = (tex2D(_OutlineDistortTex, i.uvOutDistTex).r - 0.5) * 0.2 * _OutlineDistortAmount;
+                destUv.x += outDistortAmnt;//?¨¨¡À???????xy????????¡À??????????????¨¨¡À?¡À???
+                destUv.y += outDistortAmnt;
+
+                //????¡ã???¡¤??¨°?????¨¨¡À???¡À???????alpha?? ?¨°???????¨¨¡À??¨´????????destUv¡Á¨¦????float2??
+                float spriteLeft = tex2D(_MainTex, i.uv + float2(destUv.x, 0)).a;
+                float spriteRight = tex2D(_MainTex, i.uv - float2(destUv.x, 0)).a;
+                float spriteBottom = tex2D(_MainTex, i.uv + float2(0, destUv.y)).a;
+                float spriteTop = tex2D(_MainTex, i.uv - float2(0, destUv.y)).a;
+                float spriteTopLeft = tex2D(_MainTex, i.uv + float2(destUv.x, destUv.y)).a;
+                float spriteTopRight = tex2D(_MainTex, i.uv + float2(-destUv.x, destUv.y)).a;
+                float spriteBotLeft = tex2D(_MainTex, i.uv + float2(destUv.x, -destUv.y)).a;
+                float spriteBotRight = tex2D(_MainTex, i.uv + float2(-destUv.x, -destUv.y)).a;
+                float result = spriteLeft + spriteRight + spriteBottom + spriteTop + spriteTopLeft + spriteTopRight + spriteBotLeft + spriteBotRight;
+
+                result = step(0.05, saturate(result));//????¡Á??¨®???¨¢??alpha???¨®??0.05???¨°??1??¡¤??¨°????0?¡§??????¡À??????¡§??
+                result *= (1 - originalAlpha) * _OutlineAlpha;//?????¨¨¡À???alpha??
+
+                fixed4 outline = _OutlineColor;//?¨¨¡À???????
+                col = lerp(col, outline, result);//???????¨´????¡Á??¨®??????
+
+                //------Rotate------
+
+
+                return col;
+            }
+            ENDCG
+        }
+    }
+}
