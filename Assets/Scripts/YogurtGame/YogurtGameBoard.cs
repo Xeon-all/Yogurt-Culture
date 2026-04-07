@@ -25,10 +25,6 @@ public class YogurtGameBoard : MonoBehaviour
     private readonly Dictionary<string, List<TagData>> _toppingTagsCache =
         new(StringComparer.OrdinalIgnoreCase);
 
-    // Topping激活状态: id -> isActive
-    private readonly Dictionary<string, bool> _toppingActiveCache =
-        new(StringComparer.OrdinalIgnoreCase);
-
     // Topping 运行时数据仓库
     [SerializeField] private ToppingDataBase toppingDataBase = new();
 
@@ -107,17 +103,13 @@ public class YogurtGameBoard : MonoBehaviour
     {
         _cache.Clear();
         _toppingTagsCache.Clear();
-        _toppingActiveCache.Clear();
 
         // 加载各表数据
         LoadTable<ToppingData>("Topping", ParseToppingTags);
         LoadTable<UpgradeData>("Upgrade");
 
-        // 初始化所有 Topping 为未激活状态
-        InitializeToppingActiveStatus();
-
-        // 初始化所有 Topping 运行时数量（默认 10）
-        toppingDataBase.InitializeAll(10);
+        // 初始化所有 Topping 运行时数据（默认 10 个，初始激活）
+        toppingDataBase.InitializeAll(10, true);
     }
 
     /// <summary>
@@ -158,57 +150,17 @@ public class YogurtGameBoard : MonoBehaviour
     }
 
     /// <summary>
-    /// 初始化所有 Topping 为未激活状态
-    /// </summary>
-    private void InitializeToppingActiveStatus()
-    {
-        if (!_cache.TryGetValue("Topping", out var table)) return;
-
-        foreach (var row in table.Values)
-        {
-            if (row is ToppingData topping && !string.IsNullOrWhiteSpace(topping.ID))
-            {
-                _toppingActiveCache[topping.ID] = true;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 获取 Topping 的激活状态
-    /// </summary>
-    public bool GetToppingActive(string id)
-    {
-        if (string.IsNullOrWhiteSpace(id)) return false;
-        return _toppingActiveCache.TryGetValue(id, out var isActive) && isActive;
-    }
-
-    /// <summary>
-    /// 设置 Topping 的激活状态
-    /// </summary>
-    public void SetToppingActive(string id, bool isActive)
-    {
-        if (string.IsNullOrWhiteSpace(id)) return;
-        _toppingActiveCache[id] = isActive;
-    }
-
-    /// <summary>
     /// 获取所有已激活的 Topping 数据
     /// </summary>
     public List<ToppingData> GetAllActiveToppings()
     {
+        var items = toppingDataBase?.GetAllActiveItems();
         var result = new List<ToppingData>();
-
-        if (!_cache.TryGetValue("Topping", out var table)) return result;
-
-        foreach (var row in table.Values)
+        if (items == null) return result;
+        foreach (var item in items)
         {
-            if (row is ToppingData topping)
-            {
-                if (GetToppingActive(topping.ID))
-                {
-                    result.Add(topping);
-                }
-            }
+            if (item.Data != null)
+                result.Add(item.Data);
         }
         return result;
     }
@@ -250,8 +202,19 @@ public class YogurtGameBoard : MonoBehaviour
         return toppingDataBase?.GetItem(id);
     }
 
+    public bool GetToppingActive(string id)
+    {
+        return toppingDataBase?.GetActive(id) ?? false;
+    }
+
+    public void SetToppingActive(string id, bool isActive)
+    {
+        toppingDataBase?.SetActive(id, isActive);
+    }
+
     public void ConsumeTopping(string id, int amount = 1)
     {
+        if (!GetToppingActive(id)) return;
         toppingDataBase?.Consume(id, amount);
         PreparationUI ui;
         ui = GameLoopManager.Instance.GetPreparationUI().
@@ -261,6 +224,7 @@ public class YogurtGameBoard : MonoBehaviour
 
     public void RestoreTopping(ToppingItem item)
     {
+        if (!GetToppingActive(item.Data.ID)) return;
         toppingDataBase?.Restore(item);
         if(GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
         {
