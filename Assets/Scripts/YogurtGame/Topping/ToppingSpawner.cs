@@ -27,11 +27,11 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
 
     public override void OnPointerEnter(PointerEventData eventData)
     {
+        if(Item.Count == 0) Item = null;
         base.OnPointerEnter(eventData);
         if (Item?.Data == null ||
             GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
             return;
-
         _tooltipCoroutine = StartCoroutine(ShowTooltipAfterDelay());
     }
 

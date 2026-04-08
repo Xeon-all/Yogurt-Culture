@@ -4,17 +4,12 @@ using TMPro;
 
 public class ToppingPreparation : SpawnDragger
 {
+    [SerializeField] private TextMeshProUGUI countText;
     private TextMeshProUGUI _tmp;
-
-    void Awake()
-    {
-        _tmp = GetComponentInChildren<TextMeshProUGUI>();
-    }
 
     public override void RestoreTopping(ToppingItem item)
     {
         YogurtGameBoard.Instance.RestoreTopping(item);
-        // RefreshCount();
     }
 
     protected override ToppingItem ConstructItem()
@@ -22,7 +17,7 @@ public class ToppingPreparation : SpawnDragger
         return Item;
     }
 
-    public void RefreshCount()
+    public void Refresh()
     {
         if (Item?.Data == null) return;
         Item.Count = YogurtGameBoard.Instance.GetToppingCount(Item.Data.ID);
@@ -31,10 +26,12 @@ public class ToppingPreparation : SpawnDragger
 
     private void UpdateDisplay()
     {
-        if (Item?.Data == null) return;
-        if (_tmp != null)
-            _tmp.text = $"{Item.Data.Name} x{Item.Count}";
-        Debug.Log($"update display of {Item.Data.Name} x{Item.Count}");
+        if (Item == null) return;
+        if(_tmp == null)
+            _tmp = GetComponentInChildren<TextMeshProUGUI>();
+        _tmp.text = Item.Data.Name;
+        if (countText != null)
+            countText.text = $"{Item.Count}";
     }
 
     public override void OnPointerDown(PointerEventData eventData)

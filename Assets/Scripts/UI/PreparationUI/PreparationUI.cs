@@ -24,24 +24,30 @@ public class PreparationUI : MonoBehaviour
     private int _itemsPerPage;
     private List<RectTransform> _anchors = new();
     private List<GameObject> _instantiatedItems = new();
+    private bool _initialized = false;
 
     public void InitData()
     {
+        if (_initialized) return;
+        _initialized = true;
+
         LoadToppingData();
         CollectAnchors();
         CalculatePagination();
         SetupButtons();
+        InstantiateAllItems();
         ShowPage(0);
     }
-    public void RefreshDisplay(int pageIndex = -1)
-    {
-        if(pageIndex == -1) pageIndex = _currentPage;
-        int startIndex = pageIndex * _itemsPerPage;
-        int endIndex = Mathf.Min(startIndex + _itemsPerPage, _toppingList.Count);
 
-        for (int i = startIndex; i < endIndex; i++)
+    /// <summary>
+    /// 一次性生成所有 item 实例，保存到对应 anchor，后续翻页不再实例化
+    /// </summary>
+    private void InstantiateAllItems()
+    {
+        _instantiatedItems.Clear();
+        for (int i = 0; i < _toppingList.Count; i++)
         {
-            int localIndex = i - startIndex;
+            int localIndex = i % _itemsPerPage;
             RectTransform anchor = _anchors[localIndex];
 
             GameObject item = Instantiate(itemPrefab, anchor);
@@ -54,6 +60,21 @@ public class PreparationUI : MonoBehaviour
 
             _instantiatedItems.Add(item);
             SetupItem(item, _toppingList[i]);
+        }
+    }
+
+    /// <summary>
+    /// 刷新当前页数据，不再实例化
+    /// </summary>
+    public void RefreshDisplay(int pageIndex = -1)
+    {
+        if (pageIndex == -1) pageIndex = _currentPage;
+        int startIndex = pageIndex * _itemsPerPage;
+        int endIndex = Mathf.Min(startIndex + _itemsPerPage, _toppingList.Count);
+
+        for (int i = startIndex; i < endIndex; i++)
+        {
+            SetupItem(_instantiatedItems[i], _toppingList[i]);
         }
     }
     private void LoadToppingData()
@@ -99,8 +120,7 @@ public class PreparationUI : MonoBehaviour
         if (container == null || itemPrefab == null)
             return;
 
-        ClearItems();
-
+        RefreshPageItems(pageIndex);
         RefreshDisplay(pageIndex);
 
         if (pageInfoText != null)
@@ -112,6 +132,21 @@ public class PreparationUI : MonoBehaviour
             nextPageButton.interactable = pageIndex < _totalPages - 1;
 
         _currentPage = pageIndex;
+    }
+
+    /// <summary>
+    /// 根据页索引切换 item 的激活状态，不销毁实例
+    /// </summary>
+    private void RefreshPageItems(int pageIndex)
+    {
+        int startIndex = pageIndex * _itemsPerPage;
+        int endIndex = Mathf.Min(startIndex + _itemsPerPage, _toppingList.Count);
+
+        for (int i = 0; i < _instantiatedItems.Count; i++)
+        {
+            bool isOnPage = i >= startIndex && i < endIndex;
+            _instantiatedItems[i]?.SetActive(isOnPage);
+        }
     }
 
     private void ClearItems()
@@ -128,7 +163,7 @@ public class PreparationUI : MonoBehaviour
     {
         var dataCache = item.GetComponent<ToppingPreparation>();
         dataCache.Item = itemData;
-        dataCache.RefreshCount();
+        dataCache.Refresh();
     }
 
     private void OnPrevPage()

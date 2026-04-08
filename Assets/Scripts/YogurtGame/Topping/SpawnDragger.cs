@@ -6,15 +6,8 @@ public abstract class SpawnDragger : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler
 {
     [HideInInspector] public ToppingItem Item;
-
     protected GameObject Obj;
     protected Vector2 _pos;
-
-    void Awake()
-    {
-        Item = null;
-        Obj = null;
-    }
 
     public virtual void OnPointerDown(PointerEventData eventData)
     {
