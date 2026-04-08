@@ -9,9 +9,10 @@ using YogurtCulture.GameLoop;
 /// YogurtGameBoard：负责加载和管理经营过程中会用到的数据表缓存。
 /// 策略：Awake 时从 Resources/DataTable/JsonData 读取 JSON，并用自动生成的表类反序列化后缓存。
 /// </summary>
-public class YogurtGameBoard : MonoBehaviour
+[DefaultExecutionOrder(-1)]
+public class YogurtGameBoard : Singleton<YogurtGameBoard>
 {
-    public static YogurtGameBoard Instance { get; private set; }
+    // public static YogurtGameBoard Instance { get; private set; }
 
     [Header("Data")]
     [Tooltip("JsonData 加载路径（相对 Resources）。默认：DataTable/JsonData")]
@@ -28,24 +29,12 @@ public class YogurtGameBoard : MonoBehaviour
     // Topping 运行时数据仓库
     [SerializeField] private ToppingDataBase toppingDataBase = new();
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
+        base.Awake();
         LoadAll();
     }
 
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
-    }
 
     /// <summary>
     /// 根据表名（支持简写，如 Topping）与 ID 获取一条记录。
@@ -220,6 +209,13 @@ public class YogurtGameBoard : MonoBehaviour
         ui = GameLoopManager.Instance.GetPreparationUI().
             Find(item => item.GetComponent<PreparationUI>()).GetComponent<PreparationUI>();
         ui.RefreshDisplay();
+    }
+
+    public void RestoreTopping(string id, int amount = 1)
+    {
+        if (!GetToppingActive(id)) return;
+        var data = GetToppingData(id);
+        toppingDataBase?.Restore(new ToppingItem(data, amount));
     }
 
     public void RestoreTopping(ToppingItem item)
