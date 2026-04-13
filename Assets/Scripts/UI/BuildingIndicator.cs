@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.Events;
 
-public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [Header("Brackets")]
     [Tooltip("四个角使用同一张图旋转获得，拖入左上角素材即可")]
@@ -57,6 +58,9 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     [Tooltip("编辑器预览用标签文字（实际使用 SetLabel 动态设置）")]
     [HideInInspector, SerializeField] public string _previewText;
+    [Header("Events")]
+    [Tooltip("点击时触发")]
+    public UnityEvent OnClick;
 
     private GameObject _cornerTL, _cornerTR, _cornerBL, _cornerBR;
     private GameObject _labelGO;
@@ -113,6 +117,11 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         _visible = false;
         HideCorners();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        OnClick?.Invoke();
     }
 
     // ---------- 生命周期结束后清理 ----------
@@ -343,6 +352,7 @@ namespace UnityEditor
         private SerializedProperty spUseFloatEffect, spFloatFrequency, spFloatAmplitude;
         private SerializedProperty spUseScaleEffect, spScaleFrequency, spScaleAmplitude;
         private SerializedProperty spShowLabel, spLabelFont, spLabelFontSize, spLabelColor, spLabelMaterial;
+        private SerializedProperty spOnClick;
 
         private bool _foldoutBounds = true;
         private bool _foldoutEffect = true;
@@ -368,6 +378,7 @@ namespace UnityEditor
             spLabelFontSize = serializedObject.FindProperty("labelFontSize");
             spLabelColor    = serializedObject.FindProperty("labelColor");
             spLabelMaterial = serializedObject.FindProperty("labelMaterial");
+            spOnClick = serializedObject.FindProperty("OnClick");
         }
 
         public override void OnInspectorGUI()
@@ -467,17 +478,15 @@ namespace UnityEditor
                         _tgt.SetLabel(newText, true);
                     }
                     EditorGUI.EndChangeCheck();
-                    EditorGUILayout.HelpBox("运行时调用 indicator.SetLabel(\"文字\") 设置标签内容。", MessageType.Info);
                 }
                 EditorGUI.indentLevel--;
             }
 
+            // ── Events ────────────────────────────────────────────────
             EditorGUILayout.Space(4);
-            EditorGUILayout.HelpBox(
-                "Scene 视图中可看到约束方框 Gizmos（青色线框）。\n" +
-                "拖动四个角球可快速调整边界。\n" +
-                "Play 模式下 Hover 此物体即显示括号特效。",
-                MessageType.Info);
+            EditorGUILayout.PropertyField(spOnClick);
+
+            EditorGUILayout.Space(4);
 
             serializedObject.ApplyModifiedProperties();
         }

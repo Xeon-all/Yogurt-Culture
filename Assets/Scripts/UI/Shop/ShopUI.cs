@@ -47,6 +47,12 @@ public class ShopUI : MonoBehaviour
         RefreshMoney();
     }
 
+    public void Show()
+    {
+        InitData();
+        gameObject.SetActive(true);
+    }
+
     /// <summary>
     /// 调用 ShopGridGenerator 生成网格布局，然后收集子物体作为锚点。
     /// 内部通过 ShopGridGenerator 是否有子物体判断是否已生成，避免重复。
