@@ -10,6 +10,7 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI priceText;
+    [SerializeField] private TextMeshProUGUI stockText;
     private ShopUI rootUI;
 
     public ToppingItem Item { get; private set; }
@@ -30,6 +31,12 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler
 
         if (priceText != null)
             priceText.text = $"{Item.Data.Price}";
+
+        if (stockText != null)
+        {
+            int count = YogurtGameBoard.Instance.GetToppingCount(Item.Data.ID);
+            stockText.text = $"{count}";
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -60,6 +67,7 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler
         int newCount = toppingItem.Count;
 
         rootUI.RefreshMoney();
+        RefreshDisplay();
 
         Debug.Log($"[ShopItemCell] Restocked {Item.Data.Name} (ID: {id}): {previousCount} → {newCount}");
     }

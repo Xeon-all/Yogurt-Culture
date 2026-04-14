@@ -52,6 +52,10 @@ public class ShopUI : MonoBehaviour
         InitData();
         gameObject.SetActive(true);
     }
+    public void Hide()
+    {
+        gameObject.SetActive(false);
+    }
 
     /// <summary>
     /// 调用 ShopGridGenerator 生成网格布局，然后收集子物体作为锚点。
