@@ -72,6 +72,11 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     void Start()
     {
+        Init();
+    }
+
+    public void Init()
+    {
         CreateCorners();
         HideCorners();
         RefreshPositions();
@@ -129,6 +134,12 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
     void OnDestroy()
     {
         DestroyCorners();
+    }
+
+    public void Cleanup()
+    {
+        DestroyCorners();
+        enabled = false;
     }
 
     private void DestroyCorners()

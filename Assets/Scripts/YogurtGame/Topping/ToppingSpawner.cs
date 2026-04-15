@@ -138,7 +138,7 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
     }
 
     #endregion
-    void ClearContain()
+    public void ClearContain()
     {
         sr.sprite = null;
         sr.color = Color.white;

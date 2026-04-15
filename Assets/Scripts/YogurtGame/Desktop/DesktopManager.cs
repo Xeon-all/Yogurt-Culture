@@ -19,4 +19,10 @@ public class DesktopManager : Singleton<DesktopManager>
         instance.GetComponent<DraggerTopping>().SetData(item);
         return instance;
     }
+    public void ClearAllTopping()
+    {
+        var spawners = FindObjectsByType<ToppingSpawner>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach(var s in spawners)
+            s.ClearContain();
+    }
 }

@@ -42,11 +42,32 @@ public class CameraManager : MonoBehaviour {
     /// <param name="onComplete">切换完成后的回调</param>
     public void TransitionToFocus() {
         var brain = gameObject.GetComponent<CinemachineBrain>();
-        if(GameLoopManager.Instance.CurrentPhase != GamePhase.Init || brain.IsBlending) return;
+        if((GameLoopManager.Instance.CurrentPhase != GamePhase.Init &&
+            GameLoopManager.Instance.CurrentPhase != GamePhase.Settlement)
+            || brain.IsBlending) return;
         if (vcamFull == null || vcamFocus == null) return;
         vcamFull.gameObject.SetActive(false);
         vcamFocus.gameObject.SetActive(true);
+        var indicators = FindObjectsOfType<BuildingIndicator>();
+            foreach(var i in indicators)
+                i.Cleanup();
         StartCoroutine(WaitForBlendComplete(() => GameLoopManager.Instance.TransitToNext()));
+    }
+
+    public void TransitionToView() {
+        var brain = gameObject.GetComponent<CinemachineBrain>();
+        if(GameLoopManager.Instance.CurrentPhase != GamePhase.Settlement || brain.IsBlending) return;
+        if (vcamFull == null || vcamFocus == null) return;
+        vcamFocus.gameObject.SetActive(false);
+        vcamFull.gameObject.SetActive(true);
+        StartCoroutine(WaitForBlendComplete(() => {
+            var indicators = FindObjectsByType<BuildingIndicator>(FindObjectsSortMode.None);
+            foreach(var i in indicators)
+            {
+                i.Init();
+                i.enabled = true;
+            }
+        }));
     }
 
     private IEnumerator WaitForBlendComplete(Action onComplete) {
