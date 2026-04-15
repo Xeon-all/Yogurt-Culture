@@ -42,7 +42,7 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData)
     {
         if (Item?.Data == null) return;
-        Debug.Log($"[ShopItemCell] Clicked: {Item.Data.Name} (ID: {Item.Data.ID})");
+        // Debug.Log($"[ShopItemCell] Clicked: {Item.Data.Name} (ID: {Item.Data.ID})");
         RestockTopping();
     }
 
@@ -69,18 +69,18 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler
         rootUI.RefreshMoney();
         RefreshDisplay();
 
-        Debug.Log($"[ShopItemCell] Restocked {Item.Data.Name} (ID: {id}): {previousCount} → {newCount}");
+        // Debug.Log($"[ShopItemCell] Restocked {Item.Data.Name} (ID: {id}): {previousCount} → {newCount}");
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (Item?.Data == null) return;
-        Debug.Log($"[ShopItemCell] Enter: {Item.Data.Name}");
+        // Debug.Log($"[ShopItemCell] Enter: {Item.Data.Name}");
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (Item?.Data == null) return;
-        Debug.Log($"[ShopItemCell] Exit: {Item.Data.Name}");
+        // Debug.Log($"[ShopItemCell] Exit: {Item.Data.Name}");
     }
 }

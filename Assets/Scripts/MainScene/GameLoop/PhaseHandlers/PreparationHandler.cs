@@ -14,6 +14,7 @@ namespace YogurtCulture.GameLoop
         {
             base.OnPhaseEnter(data);
             
+            DisableIndicator();
             uiList = GameLoopManager.Instance.GetPreparationUI();
             uiList[0].GetComponent<PreparationUI>().InitData();
             foreach(var ui in uiList)
@@ -27,6 +28,13 @@ namespace YogurtCulture.GameLoop
             base.OnPhaseExit(data);
             uiList = GameLoopManager.Instance.GetPreparationUI();
             if (uiList[0] != null) uiList[0].SetActive(false);
+        }
+
+        private void DisableIndicator()
+        {
+            var indicators = UnityEngine.Object.FindObjectsOfType<BuildingIndicator>();
+            foreach(var i in indicators)
+                i.enabled = false;
         }
     }
 }

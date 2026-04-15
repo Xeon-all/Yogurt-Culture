@@ -115,7 +115,7 @@ public class ShopUI : MonoBehaviour
             var toppingItem = new ToppingItem(topping);
             _shopItemList.Add(toppingItem);
         }
-        Debug.Log($"[ShopUI] Loaded {_shopItemList.Count} items from YogurtGameBoard.");
+        // Debug.Log($"[ShopUI] Loaded {_shopItemList.Count} items from YogurtGameBoard.");
     }
 
     /// <summary>

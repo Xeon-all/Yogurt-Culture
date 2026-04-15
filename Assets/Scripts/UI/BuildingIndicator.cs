@@ -10,7 +10,7 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
     public Sprite cornerSprite;
 
     [Tooltip("每个角的世界空间尺寸（pixelsToUnits 影响）")]
-    public float cornerSize = 0.3f;
+    public float cornerSize = 1.5f;
 
     [Header("Bound Constraints")]
     [Tooltip("约束方框左下角（相对于 transform.localPosition 的偏移）")]
@@ -24,7 +24,7 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
     public bool useFloatEffect = true;
 
     [Tooltip("浮动频率（次/秒）")]
-    public float floatFrequency = 1.5f;
+    public float floatFrequency = 1f;
 
     [Tooltip("浮动幅度（世界空间单位）")]
     public float floatAmplitude = 0.05f;
@@ -34,11 +34,11 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
     public bool useScaleEffect = true;
 
     [Tooltip("缩放脉冲频率（次/秒）")]
-    public float scaleFrequency = 1.2f;
+    public float scaleFrequency = 1f;
 
     [Tooltip("缩放幅度比例（0=不缩放，0.2=±20%%）")]
     [Range(0f, 0.5f)]
-    public float scaleAmplitude = 0.15f;
+    public float scaleAmplitude = 0.1f;
 
     [Header("Label (3D TextMeshPro)")]
     [Tooltip("Hover 时显示的标签文字（调用 SetLabel 设置）")]
@@ -232,7 +232,12 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         var go = new GameObject(name);
         go.transform.SetParent(parent);
-        go.transform.localScale = Vector3.one;
+        Vector3 parentWorldScale = parent.lossyScale;
+        go.transform.localScale = new Vector3(
+            cornerSize / parentWorldScale.x,
+            cornerSize / parentWorldScale.y,
+            cornerSize / parentWorldScale.z
+        );
         go.SetActive(false);
 
         var sr = go.AddComponent<SpriteRenderer>();
@@ -299,7 +304,9 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
     /// </summary>
     private void ApplyScale(float scale)
     {
-        float sz = cornerSize * scale;
+        var parent = _cornerBL.transform.parent;
+        var trueSize = cornerSize / parent.transform.lossyScale.x;
+        float sz = trueSize * scale;
         Vector3 sc = Vector3.one * sz;
         if (_cornerTL != null) _cornerTL.transform.localScale = sc;
         if (_cornerTR != null) _cornerTR.transform.localScale = sc;
@@ -312,7 +319,6 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (go == null) return;
         go.transform.localPosition = pos;
         go.transform.localRotation = rot;
-        go.transform.localScale = Vector3.one * cornerSize;
     }
 
     // ---------- Gizmos（Editor 实时预览）----------
@@ -334,10 +340,10 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
         // 角球：大小与 bracket 一致（橙色），直观看到括号落点
         Gizmos.color = new Color(1f, 0.6f, 0.2f, 0.8f);
-        Gizmos.DrawWireSphere(tl, cornerSize * 0.5f);
-        Gizmos.DrawWireSphere(tr, cornerSize * 0.5f);
-        Gizmos.DrawWireSphere(bl, cornerSize * 0.5f);
-        Gizmos.DrawWireSphere(br, cornerSize * 0.5f);
+        Gizmos.DrawWireSphere(tl, cornerSize * 0.2f);
+        Gizmos.DrawWireSphere(tr, cornerSize * 0.2f);
+        Gizmos.DrawWireSphere(bl, cornerSize * 0.2f);
+        Gizmos.DrawWireSphere(br, cornerSize * 0.2f);
     }
 }
 
@@ -542,7 +548,7 @@ namespace UnityEditor
             Handles.DrawLine(tlW, blW);
 
             // 角球（选中高亮 + 半径 = bracket 尺寸）
-            float r = _tgt.cornerSize * 0.5f;
+            float r = _tgt.cornerSize * 0.2f;
             DrawCap(blW, r, allowEdit);
             DrawCap(brW, r, allowEdit);
             DrawCap(tlW, r, allowEdit);
