@@ -13,6 +13,7 @@ public class ToppingData : TableDataBase
 	public int Price;
 	public string Tags;
 	public string DraggerName;
+	public string DraggerSprite;
 	public string GrooveName;
 	public string Descrip;
 	public string color;

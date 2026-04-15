@@ -7,6 +7,7 @@
     "Price": 5,
     "Tags": "sweet,3",
     "DraggerName": "BaseDragger",
+    "DraggerSprite": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#FFB300"
@@ -19,6 +20,7 @@
     "Price": 5,
     "Tags": "crispy,3",
     "DraggerName": "BaseDragger",
+    "DraggerSprite": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#FFE082"
@@ -31,6 +33,7 @@
     "Price": 5,
     "Tags": "rich,3",
     "DraggerName": "BaseDragger",
+    "DraggerSprite": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#3E2723"
@@ -43,9 +46,10 @@
     "Price": 5,
     "Tags": "fruity,2;sweet,2",
     "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
+    "DraggerSprite": "蓝莓Dragger",
+    "GrooveName": "蓝莓",
     "Descrip": "",
-    "color": "#512DA8"
+    "color": "#FFFFFF"
   },
   {
     "ID": "GreenAppleDices",
@@ -55,9 +59,10 @@
     "Price": 5,
     "Tags": "fruity,2;sour,2",
     "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
+    "DraggerSprite": "青苹果Dragger",
+    "GrooveName": "青苹果",
     "Descrip": "",
-    "color": "#8BC34A"
+    "color": "#FFFFFF"
   },
   {
     "ID": "CaramelAlmonds",
@@ -67,9 +72,10 @@
     "Price": 5,
     "Tags": "rich,2;crispy,2",
     "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
+    "DraggerSprite": "焦糖杏仁Dragger",
+    "GrooveName": "焦糖杏仁",
     "Descrip": "",
-    "color": "#D84315"
+    "color": "#FFFFFF"
   },
   {
     "ID": "FreezedriedStrawberry",
@@ -79,9 +85,10 @@
     "Price": 5,
     "Tags": "fruity,1;sour,1;crispy,1",
     "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
+    "DraggerSprite": "草莓Dragger",
+    "GrooveName": "草莓",
     "Descrip": "",
-    "color": "#E53935"
+    "color": "#FFFFFF"
   },
   {
     "ID": "YogurtChunks",
@@ -91,9 +98,10 @@
     "Price": 5,
     "Tags": "sour,2;rich,2",
     "DraggerName": "BaseDragger",
-    "GrooveName": "Default",
+    "DraggerSprite": "老酸奶Dragger",
+    "GrooveName": "老酸奶",
     "Descrip": "",
-    "color": "#FFF59D"
+    "color": "#FFFFFF"
   },
   {
     "ID": "CandiedLemon",
@@ -103,6 +111,7 @@
     "Price": 5,
     "Tags": "sour,1;sweet,2;fruity,1",
     "DraggerName": "BaseDragger",
+    "DraggerSprite": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#FFEE58"
@@ -115,6 +124,7 @@
     "Price": 5,
     "Tags": "rich,1;crispy,2;sweet,1",
     "DraggerName": "BaseDragger",
+    "DraggerSprite": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#558B2F"
