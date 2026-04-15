@@ -14,6 +14,7 @@ public class ToppingData : TableDataBase
 	public string Tags;
 	public string DraggerName;
 	public string DraggerSprite;
+	public string ItemIcon;
 	public string GrooveName;
 	public string Descrip;
 	public string color;

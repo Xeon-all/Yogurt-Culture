@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.UI;
 
 /// <summary>
 /// 商店格子 UI 组件，响应鼠标事件并显示商品信息。
@@ -21,14 +22,21 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler
         rootUI = root;
         RefreshDisplay();
     }
-
+    
+    private const string SPRITEPATH = "Art/Yogurt/Topping/";
     public void RefreshDisplay()
     {
         if (Item?.Data == null) return;
 
         if (nameText != null)
             nameText.text = Item.Data.Name;
-
+        if(!string.IsNullOrEmpty(Item.Data.ItemIcon))
+        {
+            nameText.text = "";
+            var sprite = Resources.Load<Sprite>(SPRITEPATH + Item.Data.ItemIcon);
+            if(sprite != null)
+                GetComponent<Image>().sprite = sprite;
+        }
         if (priceText != null)
             priceText.text = $"{Item.Data.Price}";
 

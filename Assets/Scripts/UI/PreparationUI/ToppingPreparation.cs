@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.UI;
 
 public class ToppingPreparation : SpawnDragger
 {
@@ -23,13 +24,21 @@ public class ToppingPreparation : SpawnDragger
         Item.Count = YogurtGameBoard.Instance.GetToppingCount(Item.Data.ID);
         UpdateDisplay();
     }
-
+    
+    private const string SPRITEPATH = "Art/Yogurt/Topping/";
     private void UpdateDisplay()
     {
         if (Item == null) return;
         if(_tmp == null)
             _tmp = GetComponentInChildren<TextMeshProUGUI>();
         _tmp.text = Item.Data.Name;
+        if(!string.IsNullOrEmpty(Item.Data.ItemIcon))
+        {
+            _tmp.text = "";
+            var sprite = Resources.Load<Sprite>(SPRITEPATH + Item.Data.ItemIcon);
+            if(sprite != null)
+                GetComponent<Image>().sprite = sprite;
+        }
         if (countText != null)
             countText.text = $"{Item.Count}";
     }

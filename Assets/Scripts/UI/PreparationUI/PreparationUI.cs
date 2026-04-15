@@ -158,7 +158,6 @@ public class PreparationUI : MonoBehaviour
         }
         _instantiatedItems.Clear();
     }
-
     private void SetupItem(GameObject item, ToppingItem itemData)
     {
         var dataCache = item.GetComponent<ToppingPreparation>();

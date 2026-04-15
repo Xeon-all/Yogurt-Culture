@@ -8,6 +8,7 @@
     "Tags": "sweet,3",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "",
+    "ItemIcon": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#FFB300"
@@ -21,6 +22,7 @@
     "Tags": "crispy,3",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "",
+    "ItemIcon": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#FFE082"
@@ -34,6 +36,7 @@
     "Tags": "rich,3",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "",
+    "ItemIcon": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#3E2723"
@@ -47,6 +50,7 @@
     "Tags": "fruity,2;sweet,2",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "蓝莓Dragger",
+    "ItemIcon": "蓝莓Icon",
     "GrooveName": "蓝莓",
     "Descrip": "",
     "color": "#FFFFFF"
@@ -60,6 +64,7 @@
     "Tags": "fruity,2;sour,2",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "青苹果Dragger",
+    "ItemIcon": "青苹果Icon",
     "GrooveName": "青苹果",
     "Descrip": "",
     "color": "#FFFFFF"
@@ -73,6 +78,7 @@
     "Tags": "rich,2;crispy,2",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "焦糖杏仁Dragger",
+    "ItemIcon": "焦糖杏仁Icon",
     "GrooveName": "焦糖杏仁",
     "Descrip": "",
     "color": "#FFFFFF"
@@ -86,6 +92,7 @@
     "Tags": "fruity,1;sour,1;crispy,1",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "草莓Dragger",
+    "ItemIcon": "草莓Icon",
     "GrooveName": "草莓",
     "Descrip": "",
     "color": "#FFFFFF"
@@ -99,6 +106,7 @@
     "Tags": "sour,2;rich,2",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "老酸奶Dragger",
+    "ItemIcon": "老酸奶Icon",
     "GrooveName": "老酸奶",
     "Descrip": "",
     "color": "#FFFFFF"
@@ -112,6 +120,7 @@
     "Tags": "sour,1;sweet,2;fruity,1",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "",
+    "ItemIcon": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#FFEE58"
@@ -125,6 +134,7 @@
     "Tags": "rich,1;crispy,2;sweet,1",
     "DraggerName": "BaseDragger",
     "DraggerSprite": "",
+    "ItemIcon": "",
     "GrooveName": "Default",
     "Descrip": "",
     "color": "#558B2F"
