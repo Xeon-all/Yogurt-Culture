@@ -10,7 +10,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "",
+    "Descrip": "默认说明经营",
     "color": "#FFB300"
   },
   {
@@ -24,7 +24,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#FFE082"
   },
   {
@@ -38,7 +38,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#3E2723"
   },
   {
@@ -52,7 +52,7 @@
     "DraggerSprite": "蓝莓Dragger",
     "ItemIcon": "蓝莓Icon",
     "GrooveName": "蓝莓",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#FFFFFF"
   },
   {
@@ -66,7 +66,7 @@
     "DraggerSprite": "青苹果Dragger",
     "ItemIcon": "青苹果Icon",
     "GrooveName": "青苹果",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#FFFFFF"
   },
   {
@@ -80,7 +80,7 @@
     "DraggerSprite": "焦糖杏仁Dragger",
     "ItemIcon": "焦糖杏仁Icon",
     "GrooveName": "焦糖杏仁",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#FFFFFF"
   },
   {
@@ -94,7 +94,7 @@
     "DraggerSprite": "草莓Dragger",
     "ItemIcon": "草莓Icon",
     "GrooveName": "草莓",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#FFFFFF"
   },
   {
@@ -108,7 +108,7 @@
     "DraggerSprite": "老酸奶Dragger",
     "ItemIcon": "老酸奶Icon",
     "GrooveName": "老酸奶",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#FFFFFF"
   },
   {
@@ -122,7 +122,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#FFEE58"
   },
   {
@@ -136,7 +136,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "",
+    "Descrip": "默认说明",
     "color": "#558B2F"
   }
 ]
