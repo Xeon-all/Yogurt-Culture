@@ -19,9 +19,6 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Button prevPageButton;
     [SerializeField] private Button nextPageButton;
     [SerializeField] private TextMeshProUGUI pageInfoText;
-    [Header("Intro")]
-    [SerializeField] private Image introIcon;
-    [SerializeField] private TextMeshProUGUI introTxt;
 
     private List<ToppingItem> _shopItemList = new();
     private int _currentPage = 0;
@@ -180,16 +177,6 @@ public class ShopUI : MonoBehaviour
             nextPageButton.onClick.AddListener(OnNextPage);
     }
 
-    public void SetupIntro(ToppingItem item)
-    {
-        var path = "Art/Yogurt/Topping/" + item.Data.ItemIcon;
-        var sprite = Resources.Load<Sprite>(path);
-        if(sprite)
-            introIcon.sprite = sprite;
-        if(!string.IsNullOrEmpty(item.Data.Descrip))
-            introTxt.text = item.Data.Descrip;
-    }
-
     private void ShowPage(int pageIndex)
     {
         if (itemContent == null || itemPrefab == null)
@@ -207,10 +194,6 @@ public class ShopUI : MonoBehaviour
             nextPageButton.interactable = pageIndex < _totalPages - 1;
 
         _currentPage = pageIndex;
-
-        int firstIndexOnPage = pageIndex * _itemsPerPage;
-        if (firstIndexOnPage < _shopItemList.Count)
-            SetupIntro(_shopItemList[firstIndexOnPage]);
     }
 
     /// <summary>

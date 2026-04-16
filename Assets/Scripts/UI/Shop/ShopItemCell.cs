@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// 商店格子 UI 组件，响应鼠标事件并显示商品信息。
 /// 当前仅打印 Debug Log，后续接入购买逻辑。
 /// </summary>
-public class ShopItemCell : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
+public class ShopItemCell : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI priceText;
@@ -83,7 +83,6 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (Item?.Data == null) return;
-        rootUI.SetupIntro(Item);
         // Debug.Log($"[ShopItemCell] Enter: {Item.Data.Name}");
     }
 
