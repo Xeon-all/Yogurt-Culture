@@ -11,7 +11,7 @@
     "ItemIcon": "蜂蜜Icon",
     "GrooveName": "蜂蜜",
     "Descrip": "默认说明经营",
-    "color": "#FFB300"
+    "color": "#FFFFFF"
   },
   {
     "ID": "Cornflakes",
@@ -25,7 +25,7 @@
     "ItemIcon": "玉米片Icon",
     "GrooveName": "玉米片",
     "Descrip": "默认说明",
-    "color": "#FFE082"
+    "color": "#FFFFFF"
   },
   {
     "ID": "DarkChoc",
@@ -39,7 +39,7 @@
     "ItemIcon": "黑巧碎Icon",
     "GrooveName": "黑巧碎",
     "Descrip": "默认说明",
-    "color": "#3E2723"
+    "color": "#FFFFFF"
   },
   {
     "ID": "BlueberryJam",
