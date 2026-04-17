@@ -14,13 +14,14 @@ public class OrderResult
     public int DemandFlavor;
     public int ProvidedFlavor;
     /// <summary>成功时声望增量（已含溢出处理后的余量）</summary>
-    public float ReputationGain;
+    public int ReputationGain;
     /// <summary>成功时金币奖励</summary>
     public int GoldReward;
     /// <summary>成功时等级变化量（0 或正数）</summary>
     public int LevelChange;
     /// <summary>失败时声望惩罚（不小于0）</summary>
-    public float ReputationLoss;
+    public int ReputationLoss;
+    public Vector2 pos;
 }
 
 public class OrderManager : Singleton<OrderManager>
@@ -31,14 +32,15 @@ public class OrderManager : Singleton<OrderManager>
     /// 订单完成时发布。订阅者：ReputationSystem / MoneySystem / GameLoop。
     /// </summary>
     public event Action<OrderResult> OnOrderCompleted;
-    public event Action<Vector2> OnOrderHandover;
-    public event Action<Vector2> OnOrderSuccess;
+    public event Action<OrderResult> OnOrderHandover;
+    public event Action<OrderResult> OnOrderSuccess;
 
     [Serializable]
     public class Order
     {
         public string ID;
         public GameObject OrderEntity;
+        public Transform parent;
         public List<TagData> DemandTags = new();
         public Difficulty Difficulty = Difficulty.Low;
         public int Price = 10;
@@ -79,15 +81,23 @@ public class OrderManager : Singleton<OrderManager>
     /// 槽位清空时触发，参数为被清空的槽位索引。
     /// </summary>
     public event Action<int> OnOrderCleared;
-
+    #region 初始化
     protected override void Awake()
     {
         base.Awake();
         _autoAddTimer = 0f;
         CollectOrderSlots();
-        InitEffects();
+        InitSuccessCallback();
     }
-
+    private void InitSuccessCallback()
+    {
+        OnOrderSuccess += (result) =>
+        {
+            VFXManager.Instance.PlayVFX("CoinReward", result.pos);
+            VFXManager.Instance.PlayVFX("star", result.pos);
+        };
+    }
+    #endregion
     private void Update()
     {
         OnAutoAddTick?.Invoke();
@@ -332,20 +342,14 @@ public class OrderManager : Singleton<OrderManager>
         Transform slot = GetSlot(order.SlotIndex);
         if (order.OrderEntity == null || slot == null) return;
 
-        GameObject entity = UnityEngine.Object.Instantiate(order.OrderEntity, slot);
+        GameObject entity = Instantiate(order.OrderEntity, slot);
+        order.parent = slot;
         entity.transform.localPosition = Vector3.zero;
         entity.transform.localRotation = Quaternion.identity;
 
         entity.GetComponent<OrderEntity>()?.Setup(order);
     }
-    private void InitEffects()
-    {
-        OnOrderSuccess += (pos) =>
-        {
-            VFXManager.Instance.PlayVFX("CoinReward", pos);
-            VFXManager.Instance.PlayVFX("star", pos);
-        };
-    }
+    
     #endregion
 
     /// <summary>
@@ -399,68 +403,60 @@ public class OrderManager : Singleton<OrderManager>
 
     #region 订单完成发布
 
-    private const float LEVEL_BASE_COST = 50f;
-    private const float LEVEL_MULTIPLIER = 1.5f;
-
     /// <summary>
     /// 获取指定等级所需的声望值。
     /// </summary>
-    public static float GetExpForLevel(int level)
+    
+    public void OrderHandOver(OrderResult result)
     {
-        if (level <= 1) return LEVEL_BASE_COST;
-        float cost = LEVEL_BASE_COST;
-        for (int i = 2; i < level; i++)
-            cost = Mathf.Floor(cost * LEVEL_MULTIPLIER + LEVEL_BASE_COST);
-        return cost;
+        OnOrderHandover?.Invoke(result);
     }
-    public void OrderHandOver(Vector2 pos)
+    public void OrderSuccess(OrderResult result)
     {
-        OnOrderHandover?.Invoke(pos);
+        OnOrderSuccess?.Invoke(result);
     }
-    public void OrderSuccess(Vector2 pos)
+    public void OrderComplete(OrderResult result)
     {
-        OnOrderSuccess?.Invoke(pos);
+        OnOrderCompleted?.Invoke(result);
     }
     /// <summary>
     /// 由 OrderEntity 在提交时调用，计算奖励/惩罚后发布结果。
     /// 奖励计算只在此处发生一次，各系统只消费，不重复计算。
     /// </summary>
-    public void PublishOrderResult(
+    public OrderResult GetOrderResult(
         Order order,
         bool success,
-        int demandFlavor,
         int providedFlavor)
     {
         var result = new OrderResult
         {
             Order = order,
             IsSuccess = success,
-            DemandFlavor = demandFlavor,
+            DemandFlavor = order.FlavorExpec,
             ProvidedFlavor = providedFlavor
         };
-
+        result.pos = order.parent.position;
         if (success)
         {
             result.GoldReward = order.Price;
-            result.ReputationGain = CalculateSuccessReputation(order.Difficulty, demandFlavor, providedFlavor, out int levelUps);
-            result.LevelChange = levelUps;
+            result.ReputationGain = CalculateSuccessReputation(order.Difficulty, order.FlavorExpec, providedFlavor);
         }
         else
         {
-            result.ReputationLoss = Mathf.Max(0, (demandFlavor - providedFlavor) * 2);
+            result.ReputationLoss = Mathf.Max(0, (order.FlavorExpec - providedFlavor) * 2);
         }
 
-        OnOrderCompleted?.Invoke(result);
+        // OnOrderCompleted?.Invoke(result);
+        return result;
     }
 
     /// <summary>
     /// 计算成功时的声望增量及升级次数。
     /// </summary>
-    private float CalculateSuccessReputation(
+    private int CalculateSuccessReputation(
         Difficulty difficulty,
         int demandFlavor,
-        int providedFlavor,
-        out int levelUps)
+        int providedFlavor)
     {
         int basePoints = difficulty switch
         {
@@ -470,24 +466,25 @@ public class OrderManager : Singleton<OrderManager>
             _ => 2
         };
 
-        int baseRep = basePoints * 3;
+        int baseRep = basePoints * 300;
         int extraFlavor = Mathf.Max(0, providedFlavor - demandFlavor);
         int bonusRep = extraFlavor * 2;
-        float totalRep = baseRep + bonusRep;
+        int totalRep = baseRep + bonusRep;
 
-        // 计算升级次数：溢出部分保留为余量
-        levelUps = 0;
-        int currentLevel = ReputationSystem.Instance != null
-            ? ReputationSystem.Instance.CurrentLevel
-            : 1;
-        float expNeeded = GetExpForLevel(currentLevel + 1);
+        // // 计算升级次数：溢出部分保留为余量
+        // levelUps = 0;
+        // int currentLevel = ReputationSystem.Instance != null
+        //     ? ReputationSystem.Instance.CurrentLevel
+        //     : 1;
+        // float expNeeded = GetExpForLevel(currentLevel + 1);
 
-        while (totalRep >= expNeeded)
-        {
-            totalRep -= expNeeded;
-            levelUps++;
-            expNeeded = GetExpForLevel(currentLevel + levelUps + 1);
-        }
+        // while (totalRep >= expNeeded)
+        // {
+        //     totalRep -= expNeeded;
+        //     levelUps++;
+        //     expNeeded = GetExpForLevel(currentLevel + levelUps + 1);
+        //     Debug.Log("Level UP!!");
+        // }
 
         return totalRep;
     }

@@ -19,7 +19,7 @@ public class MorningOpHandler : PhaseHandlerBase
         data.satisfaction = 100f;
         data.todaySuccessOrders = 0;
         data.todayFailOrders = 0;
-        data.todayReputationGain = 0f;
+        data.todayReputationGain = 0;
         data.todayLevelUps = 0;
 
         OrderManager.Instance.OnOrderCompleted += OnOrderCompleted;

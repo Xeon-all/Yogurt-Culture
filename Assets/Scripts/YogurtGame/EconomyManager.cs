@@ -25,20 +25,22 @@ public class EconomyManager : Singleton<EconomyManager>
     public ReputationSystem Reputation => reputationSystem;
     public float Money => _money;
 
+    public int Lv => reputationSystem.CurrentLevel;
+
     protected override void Awake()
     {
         base.Awake();
         SetMoney(startingMoney);
         reputationSystem.Init();
 
-        OrderManager.Instance.OnOrderCompleted += OnOrderResult;
-    }
-
-    private void OnOrderResult(OrderResult result)
-    {
-        reputationSystem.HandleOrderResult(result);
-        if (result.IsSuccess)
+        OrderManager.Instance.OnOrderCompleted += (result) =>
+        {
+            // reputationSystem.HandleOrderResult(result);
+        };
+        OrderManager.Instance.OnOrderSuccess += (result) => 
+        {
             AddMoney(result.GoldReward);
+        };
     }
 
     public void SetMoney(float newMoney)

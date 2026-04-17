@@ -100,17 +100,18 @@ public class OrderEntity : MonoBehaviour
         if (yogurt == null) return;
         Debug.Log($"[OrderEntity] ========== 订单提交判定 ==========\n" +
                   $"订单需求: {FormatDemandTags(orderData?.DemandTags)}");
-
-        if (Match(yogurt))
+        var result = OrderManager.Instance.GetOrderResult(orderData, Match(yogurt), CalculateProvidedFlavor(yogurt));
+        if (result.IsSuccess)
         {
-            Debug.Log("[OrderEntity] 判定结果: 满足需求");
-            OnSubmitSuccess(yogurt);
+            OnSubmitSuccess();
+            OrderManager.Instance.OrderSuccess(result);
         }
         else
         {
-            Debug.Log("[OrderEntity] 判定结果: 不满足需求");
             OnSubmitFail();
         }
+        StartCoroutine(DissolveAndDestroy());
+        OrderManager.Instance.OrderComplete(result);
     }
 
     private bool Match(YogurtData yogurt)
@@ -137,20 +138,20 @@ public class OrderEntity : MonoBehaviour
         return string.Join(", ", tags.ConvertAll(t => $"{t.Tag}(实际:{t.Value})"));
     }
 
-    private void OnSubmitSuccess(YogurtData yogurt)
+    private void OnSubmitSuccess()
     {
-        int providedFlavor = CalculateProvidedFlavor(yogurt);
-        OrderManager.Instance.OrderSuccess(transform.parent.position);
+        Debug.Log("[OrderEntity] 判定结果: 满足需求");
         AudioManager.Instance.PlaySFX("orderSuccess");
-        StartCoroutine(DissolveAndDestroy(true, yogurt.gameObject, providedFlavor));
+        // StartCoroutine(DissolveAndDestroy(true, yogurt.gameObject));
     }
 
     private void OnSubmitFail()
     {
-        StartCoroutine(DissolveAndDestroy(false, null, 0));
+        Debug.Log("[OrderEntity] 判定结果: 不满足需求");
+        // StartCoroutine(DissolveAndDestroy(false, null));
     }
 
-    private IEnumerator DissolveAndDestroy(bool success, GameObject yogurtObj, int providedFlavor)
+    private IEnumerator DissolveAndDestroy()
     {
         // OrderManager.Instance.OrderHandOver(transform.parent.position);
         float duration = 0.3f;
@@ -175,13 +176,8 @@ public class OrderEntity : MonoBehaviour
             sr.material.SetFloat("_DissolveAmount", 2f);
         }
 
-        if (success)
-        {
-            Destroy(yogurtObj);
-        }
-
-        int demandFlavor = orderData.FlavorExpec;
-        OrderManager.Instance.PublishOrderResult(orderData, success, demandFlavor, providedFlavor);
+        // int demandFlavor = orderData.FlavorExpec;
+        // OrderManager.Instance.PublishOrderResult(orderData, success, providedFlavor);
         OrderManager.Instance.ClearSlot(orderData.SlotIndex);
         Destroy(gameObject);
     }

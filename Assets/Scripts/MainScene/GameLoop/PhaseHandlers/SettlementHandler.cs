@@ -35,7 +35,6 @@ namespace YogurtCulture.GameLoop
         private void BindUI(GameLoopData data)
         {
             var gm = GameLoopManager.Instance;
-            var rep = EconomyManager.Instance.Reputation;
 
             if (gm.SettlementDayText != null)
                 gm.SettlementDayText.text = $"{data.dayNumber}";
@@ -52,14 +51,16 @@ namespace YogurtCulture.GameLoop
             if (gm.SettlementSatisfactionFill != null)
                 gm.SettlementSatisfactionFill.fillAmount = data.satisfaction / 100f;
 
-            if (gm.SettlementLevelText != null)
-                gm.SettlementLevelText.text = $"{rep.CurrentLevel}";
+            // if (gm.SettlementLevelText != null)
+            //     gm.SettlementLevelText.text = $"{EconomyManager.Instance.Lv}";
 
             if (gm.SettlementReputationFill != null)
             {
-                float current = rep.CurrentReputation;
-                float needed = OrderManager.GetExpForLevel(rep.CurrentLevel + 1);
-                gm.SettlementReputationFill.fillAmount = Mathf.Clamp01(current / needed);
+                GameLoopManager.Instance.StartCoroutine(EconomyManager.Instance.Reputation.HandleReputationGainDisplay(
+                    gm.SettlementReputationFill,
+                    gm.SettlementLevelText,
+                    data.todayReputationGain
+                ));
             }
         }
     }
