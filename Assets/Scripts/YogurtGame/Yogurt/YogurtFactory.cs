@@ -95,6 +95,9 @@ public class YogurtFactory : Singleton<YogurtFactory>
         }
         AudioManager.Instance.PlaySFX("yogurtSpawn");
         var instance = Instantiate(prefab, position, Quaternion.identity, parent);
+        var ps = VFXManager.Instance.AppendVFX("sparkle", instance.transform);
+        var s = ps.shape;
+        s.scale = new Vector3(s.scale.x/2, s.scale.y * 0.7f, s.scale.z);
         var yogurtInstance = instance.GetComponent<YogurtInstance>();
 
         var targetData = instance.GetComponent<YogurtData>();

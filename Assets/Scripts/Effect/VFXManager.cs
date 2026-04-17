@@ -18,11 +18,7 @@ public class VFXManager : Singleton<VFXManager>
 
     private void OnEnable()
     {
-        OrderManager.Instance.OnOrderSuccess += (pos) =>
-        {
-            PlayCoinEffect(pos);
-            PlayVFX("spark", pos);
-        };
+
     }
 
     private void OnDisable()
@@ -64,23 +60,11 @@ public class VFXManager : Singleton<VFXManager>
         );
     }
 
-    public void PlayVFX(string key, Vector3 position)
+    public ParticleSystem PlayVFX(string key, Vector3 position)
     {
-        if (!vfxClipMap.TryGetValue(key, out var clip))
-        {
-            Debug.LogWarning($"VFX键 '{key}' 不存在!");
-            return;
-        }
-
-        if (!pools.TryGetValue(key, out var pool))
-        {
-            Debug.LogWarning($"VFX池 '{key}' 未初始化!");
-            return;
-        }
-
-        ParticleSystem ps = pool.Get();
+        ParticleSystem ps = InitParticle(key, out var clip, out var pool);
+        if(!ps) return ps;
         ps.transform.position = position;
-        ps.transform.localScale = Vector3.one * clip.scale;
         ps.Play();
 
         if (clip.autoReturnToPool)
@@ -88,6 +72,7 @@ public class VFXManager : Singleton<VFXManager>
             float duration = ps.main.duration + ps.main.startLifetime.constantMax;
             StartCoroutine(ReturnToPoolDelayed(pool, ps, duration));
         }
+        return ps;
     }
 
     public void PlayVFX(string key, Vector2 position)
@@ -95,15 +80,42 @@ public class VFXManager : Singleton<VFXManager>
         PlayVFX(key, new Vector3(position.x, position.y, 0));
     }
 
+    public ParticleSystem AppendVFX(string key, Transform parent, Vector3 offset = default)
+    {
+        var ps = PlayVFX(key, offset);
+        ps.transform.parent = parent;
+        ps.transform.localPosition = offset;
+        ps.transform.localScale = Vector3.one;
+        return ps;
+    }
+
+    private ParticleSystem InitParticle(string key, out VFXDefinition.VFXClip clip, out ObjectPool<ParticleSystem> pool)
+    {
+        if (!vfxClipMap.TryGetValue(key, out var c))
+        {
+            Debug.LogWarning($"VFX键 '{key}' 不存在!");
+            clip = null;
+            pool = null;
+            return null;
+        }
+
+        if (!pools.TryGetValue(key, out var p))
+        {
+            Debug.LogWarning($"VFX池 '{key}' 未初始化!");
+            clip = null;
+            pool = null;
+            return null;
+        }
+        clip = c;
+        pool = p;
+        var ps = p.Get();
+        ps.transform.localScale = Vector3.one * clip.scale;
+        return ps;
+    }
+
     private System.Collections.IEnumerator ReturnToPoolDelayed(ObjectPool<ParticleSystem> pool, ParticleSystem ps, float delay)
     {
         yield return new WaitForSeconds(delay);
         pool.Release(ps);
-    }
-
-    private void PlayCoinEffect(Vector2 pos)
-    {
-        // 兼容旧接口，金币特效暂用 "CoinReward" key
-        PlayVFX("CoinReward", pos);
     }
 }

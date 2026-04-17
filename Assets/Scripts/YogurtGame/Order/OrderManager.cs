@@ -85,6 +85,7 @@ public class OrderManager : Singleton<OrderManager>
         base.Awake();
         _autoAddTimer = 0f;
         CollectOrderSlots();
+        InitEffects();
     }
 
     private void Update()
@@ -337,7 +338,14 @@ public class OrderManager : Singleton<OrderManager>
 
         entity.GetComponent<OrderEntity>()?.Setup(order);
     }
-
+    private void InitEffects()
+    {
+        OnOrderSuccess += (pos) =>
+        {
+            VFXManager.Instance.PlayVFX("CoinReward", pos);
+            VFXManager.Instance.PlayVFX("star", pos);
+        };
+    }
     #endregion
 
     /// <summary>
