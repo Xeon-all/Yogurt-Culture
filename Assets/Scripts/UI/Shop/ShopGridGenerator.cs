@@ -49,7 +49,7 @@ public class ShopGridGenerator : MonoBehaviour
         {
             for (int c = 0; c < columnCount; c++)
             {
-                GameObject item =PrefabUtility.InstantiatePrefab(prefab, container) as GameObject;
+                GameObject item = PrefabUtility.InstantiatePrefab(prefab, container) as GameObject;
 
                 float posX = startPos.x + c * (cellSize.x + spacingX);
                 float posY = startPos.y - r * (cellSize.y + spacingY);

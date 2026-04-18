@@ -466,7 +466,7 @@ public class OrderManager : Singleton<OrderManager>
             _ => 2
         };
 
-        int baseRep = basePoints * 300;
+        int baseRep = basePoints * 3;
         int extraFlavor = Mathf.Max(0, providedFlavor - demandFlavor);
         int bonusRep = extraFlavor * 2;
         int totalRep = baseRep + bonusRep;
