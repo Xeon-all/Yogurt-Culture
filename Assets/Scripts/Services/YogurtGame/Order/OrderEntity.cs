@@ -148,15 +148,6 @@ public class OrderEntity : MonoBehaviour
             }
             yield return null;
         }
-
-        if (sr != null)
-        {
-            sr.material.SetFloat("_DissolveAmount", 2f);
-        }
-
-        // int demandFlavor = orderData.FlavorExpec;
-        // OrderManager.Instance.PublishOrderResult(orderData, success, providedFlavor);
-        OrderManager.Instance.ClearSlot(orderData.SlotIndex);
         Destroy(gameObject);
     }
 

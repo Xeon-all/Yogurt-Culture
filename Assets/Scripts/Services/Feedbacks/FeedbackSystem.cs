@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 public interface IFeedback
@@ -19,6 +20,7 @@ public class FeedbackSystem : IFeedback, IInitializable
     public void Initialize()
     {
         _eventBus.Subscribe<OrderResult>(CallFeedbacks);
+        _eventBus.Subscribe<OnYogurtSpawn>(CallFeedbacks);
     }
     public void CallFeedbacks<T>(T evt)
     {

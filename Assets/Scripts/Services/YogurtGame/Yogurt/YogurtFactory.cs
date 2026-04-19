@@ -1,5 +1,10 @@
 using UnityEngine;
+using VContainer;
 
+public struct OnYogurtSpawn
+{
+    public Transform yogurt;
+}
 /// <summary>
 /// 酸奶工厂：负责管理制作中的酸奶实例（activeYogurt），
 /// 以及将 YogurtData 数据转化为 YogurtInstance 画面表现。
@@ -28,6 +33,12 @@ public class YogurtFactory : Singleton<YogurtFactory>
     public bool HasActiveYogurt => activeYogurt != null;
     public Transform BaseParent;
     public Transform ProductParent;
+    private IEventBus _eventBus;
+    [Inject]
+    public void Construct(IEventBus eventBus)
+    {
+        _eventBus = eventBus;
+    }
 
     /// <summary>
     /// 创建 BaseYogurt 预制体。
@@ -58,7 +69,6 @@ public class YogurtFactory : Singleton<YogurtFactory>
             return;
         }
     }
-
     /// <summary>
     /// 完成制作：复用 activeYogurt 的 YogurtData，销毁制作中实例，生成酸奶成品实例。
     /// </summary>
@@ -78,7 +88,6 @@ public class YogurtFactory : Singleton<YogurtFactory>
 
         Instantiate(prefab, yogurtData, ProductParent.position, ProductParent);
     }
-
     /// <summary>
     /// 从 YogurtData 创建一个 YogurtInstance。
     /// </summary>
@@ -93,11 +102,8 @@ public class YogurtFactory : Singleton<YogurtFactory>
             Debug.LogError("[YogurtFactory] YogurtBase has no prefab bound. Cannot instantiate.");
             return null;
         }
-        AudioManager.Instance.PlaySFX("yogurtSpawn");
         var instance = Instantiate(prefab, position, Quaternion.identity, parent);
-        var ps = VFXManager.Instance.AppendVFX("sparkle", instance.transform);
-        var s = ps.shape;
-        s.scale = new Vector3(s.scale.x/2, s.scale.y * 0.7f, s.scale.z);
+        _eventBus.Publish(new OnYogurtSpawn{yogurt = instance.transform});
         var yogurtInstance = instance.GetComponent<YogurtInstance>();
 
         var targetData = instance.GetComponent<YogurtData>();

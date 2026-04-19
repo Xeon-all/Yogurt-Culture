@@ -75,11 +75,6 @@ public class OrderManager : Singleton<OrderManager>
     /// 当自动添加间隔触发时调用。在 MorningOp 阶段由 MorningOpHandler 订阅。
     /// </summary>
     public event Action OnAutoAddTick;
-
-    /// <summary>
-    /// 槽位清空时触发，参数为被清空的槽位索引。
-    /// </summary>
-    public event Action<int> OnOrderCleared;
     #region 初始化
     protected override void Awake()
     {
@@ -454,33 +449,6 @@ public class OrderManager : Singleton<OrderManager>
 
         return totalRep;
     }
-
-    #endregion
-
-    /// <summary>
-    /// OrderEntity 提交成功后调用，清空指定槽位并通知外部。
-    /// </summary>
-    public void ClearSlot(int slotIndex)
-    {
-        OnOrderCleared?.Invoke(slotIndex);
-    }
-
-    #region 废弃方法
-
-    /// <summary>
-    /// [废弃] 使用 AddOrder 代替。
-    /// </summary>
-    [Obsolete("Use AddOrder instead.")]
-    protected Order TempAddOrder_obsolete()
-    {
-        return new Order();
-    }
-
-    /// <summary>
-    /// [废弃] 不再需要调用此方法，订单槽位自动从 OrderRoot 收集。
-    /// </summary>
-    [Obsolete("Order slots are auto-collected from OrderRoot children.")]
-    public void StartTempOrder() { }
 
     #endregion
 }

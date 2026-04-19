@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public interface IEventBus 
 { 
@@ -15,7 +16,6 @@ public class GlobalEventBus : IEventBus
     public void Publish<T>(T evt)
     {
         Type eventType = typeof(T);
-
         // 如果有人监听了这个事件
         if (_subscribers.TryGetValue(eventType, out Delegate existingDelegate))
         {

@@ -13,8 +13,12 @@ public class GameLifetimeScope : LifetimeScope
         builder.RegisterEntryPoint<TutorialSystem>();
 
         builder.Register<IFeedbackHandler, OrderCompleteFeedback>(Lifetime.Scoped);
+        builder.Register<IFeedbackHandler, YogurtSpawnFeedback>(Lifetime.Scoped);
+        builder.RegisterEntryPoint<FeedbackSystem>();
 
         builder.RegisterComponent(GameLoopManager.Instance);
+        builder.RegisterComponent(OrderManager.Instance);
+        builder.RegisterComponent(YogurtFactory.Instance);
         builder.RegisterComponent(VFXManager.Instance);
         builder.RegisterComponent(AudioManager.Instance);
     }
