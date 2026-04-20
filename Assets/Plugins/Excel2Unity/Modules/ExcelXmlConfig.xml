@@ -15,5 +15,9 @@
       <ExcelPath>ToppingData.xlsx</ExcelPath><JsonPath>ToppingData.json</JsonPath>
       <WorksheetName>Sheet1</WorksheetName><ClassName>ToppingData</ClassName>
     </ExcelXmlConfig>
+    <ExcelXmlConfig>
+      <ExcelPath>YogurtDatabase.xlsx</ExcelPath><JsonPath>YogurtDatabase.json</JsonPath>
+      <WorksheetName>Sheet1</WorksheetName><ClassName>YogurtDatabase</ClassName>
+    </ExcelXmlConfig>
   </ExcelXmlConfigs>
 </ExcelXmlConfiguration>
