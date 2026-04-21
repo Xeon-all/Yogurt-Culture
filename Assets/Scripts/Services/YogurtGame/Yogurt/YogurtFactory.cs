@@ -41,8 +41,7 @@ public class YogurtFactory : Singleton<YogurtFactory>
     }
 
     /// <summary>
-    /// 创建 BaseYogurt 预制体。
-    /// 点击按钮后调用，在绑定位置生成 Prefab，销毁旧实例，全局唯一 activeYogurt。
+    /// 生成制作中酸奶
     /// </summary>
     public void CreateBaseYogurt()
     {
@@ -70,7 +69,7 @@ public class YogurtFactory : Singleton<YogurtFactory>
         }
     }
     /// <summary>
-    /// 完成制作：复用 activeYogurt 的 YogurtData，销毁制作中实例，生成酸奶成品实例。
+    /// 生成酸奶成品实例。
     /// </summary>
     public void CreateYogurtProduct()
     {
@@ -86,12 +85,12 @@ public class YogurtFactory : Singleton<YogurtFactory>
         Destroy(activeYogurt.gameObject);
         activeYogurt = null;
 
-        Instantiate(prefab, yogurtData, ProductParent.position, ProductParent);
+        _Instantiate(prefab, yogurtData, ProductParent.position, ProductParent);
     }
     /// <summary>
     /// 从 YogurtData 创建一个 YogurtInstance。
     /// </summary>
-    public YogurtInstance Instantiate(
+    public YogurtInstance _Instantiate(
         GameObject prefab,
         YogurtData yogurtData,
         Vector3 position,
@@ -122,34 +121,5 @@ public class YogurtFactory : Singleton<YogurtFactory>
         }
 
         return yogurtInstance;
-    }
-
-    /// <summary>
-    /// 从 YogurtBase 创建一个 YogurtInstance。
-    /// </summary>
-    public YogurtInstance InstantiateFromBase(
-        YogurtBase yogurtBase,
-        Vector3 position,
-        Transform parent = null)
-    {
-        if (yogurtBase == null)
-        {
-            Debug.LogError("[YogurtFactory] YogurtBase is null.");
-            return null;
-        }
-
-        var yogurtData = yogurtBase.GetComponent<YogurtData>();
-        return Instantiate(yogurtBase.Prefab, yogurtData, position, parent);
-    }
-
-    /// <summary>
-    /// 创建一个空的酸奶实例（使用默认数据）。
-    /// </summary>
-    public YogurtInstance CreateDefault(
-        GameObject prefab,
-        Vector3 position,
-        Transform parent = null)
-    {
-        return Instantiate(prefab, null, position, parent);
     }
 }

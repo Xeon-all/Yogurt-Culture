@@ -25,9 +25,7 @@ public class MorningOpHandler : PhaseHandlerBase
 
         OrderManager.Instance.OnOrderCompleted += OnOrderCompleted;
 
-        OrderManager.Instance.ResetAutoAddTimer();
-        OrderManager.Instance.TriggerInitialOrder();
-        OrderManager.Instance.OnAutoAddTick += OrderManager.Instance.TempAddOrder;
+        OrderManager.Instance.StartOrder();
     }
 
     public override void OnPhaseUpdate(GameLoopData data, float deltaTime)
@@ -42,7 +40,7 @@ public class MorningOpHandler : PhaseHandlerBase
         base.OnPhaseExit(data);
         OrderManager.Instance.OnOrderCompleted -= OnOrderCompleted;
 
-        OrderManager.Instance.OnAutoAddTick -= OrderManager.Instance.TempAddOrder;
+        OrderManager.Instance.StopOrder();
         OrderManager.Instance.ClearAllOrders();
 
         var manager = _game.npcManager;

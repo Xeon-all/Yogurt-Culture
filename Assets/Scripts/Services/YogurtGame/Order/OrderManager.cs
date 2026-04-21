@@ -74,7 +74,7 @@ public class OrderManager : Singleton<OrderManager>
     /// <summary>
     /// 当自动添加间隔触发时调用。在 MorningOp 阶段由 MorningOpHandler 订阅。
     /// </summary>
-    public event Action OnAutoAddTick;
+    public event Action OnUpdate;
     #region 初始化
     protected override void Awake()
     {
@@ -91,7 +91,7 @@ public class OrderManager : Singleton<OrderManager>
     #endregion
     private void Update()
     {
-        OnAutoAddTick?.Invoke();
+        OnUpdate?.Invoke();
     }
 
     private void CollectOrderSlots()
@@ -144,12 +144,20 @@ public class OrderManager : Singleton<OrderManager>
         }
     }
 
-    #region 自动添加订单（计时器）
+    #region 订单生成逻辑
 
-    /// <summary>
-    /// 计时器触发时调用。MorningOpHandler 会在进入阶段时订阅，退出时取消订阅。
-    /// </summary>
-    public void TempAddOrder()
+    public void StartOrder()
+    {
+        _autoAddTimer = 0f;
+        OnUpdate += TempAddOrder;
+        TriggerInitialOrder();
+    }
+    public void StopOrder()
+    {
+        _autoAddTimer = 0f;
+        OnUpdate -= TempAddOrder;
+    }
+    private void TempAddOrder()
     {
         if (autoAddInterval <= 0f) return;
 
@@ -159,14 +167,6 @@ public class OrderManager : Singleton<OrderManager>
             _autoAddTimer = 0f;
             AddOrder();
         }
-    }
-
-    /// <summary>
-    /// 重置计时器（进入阶段时调用）。
-    /// </summary>
-    public void ResetAutoAddTimer()
-    {
-        _autoAddTimer = 0f;
     }
 
     #endregion
