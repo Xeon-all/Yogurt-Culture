@@ -116,19 +116,21 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
         _visible = true;
         RefreshPositions();
         ShowCorners();
+        ShowOutline();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         _visible = false;
         HideCorners();
+        HideOutline();
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         OnClick?.Invoke();
     }
-
+    #region 括弧效果
     // ---------- 生命周期结束后清理 ----------
 
     void OnDestroy()
@@ -356,6 +358,27 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
         Gizmos.DrawWireSphere(bl, cornerSize * 0.2f);
         Gizmos.DrawWireSphere(br, cornerSize * 0.2f);
     }
+    #endregion
+
+    #region 描边效果
+    [SerializeField] public Material outlineMat;
+    [SerializeField] public SpriteRenderer sr;
+    private Material backUpMat;
+    private void ShowOutline()
+    {
+        if(sr == null)
+        {
+            Debug.LogWarning("BuildingIndicator 要求手动挂载 spriterenderer");
+            return;
+        }
+        backUpMat = sr.material;
+        sr.material = outlineMat;
+    }
+    private void HideOutline()
+    {
+        sr.material = backUpMat;
+    }
+    #endregion
 }
 
 #if UNITY_EDITOR
@@ -370,6 +393,7 @@ namespace UnityEditor
         private SerializedProperty spUseScaleEffect, spScaleFrequency, spScaleAmplitude;
         private SerializedProperty spShowLabel, spLabelFont, spLabelFontSize, spLabelColor, spLabelMaterial;
         private SerializedProperty spOnClick;
+        private SerializedProperty spOutlineMat, spSr;
 
         private bool _foldoutBounds = true;
         private bool _foldoutEffect = true;
@@ -395,7 +419,9 @@ namespace UnityEditor
             spLabelFontSize = serializedObject.FindProperty("labelFontSize");
             spLabelColor    = serializedObject.FindProperty("labelColor");
             spLabelMaterial = serializedObject.FindProperty("labelMaterial");
-            spOnClick = serializedObject.FindProperty("OnClick");
+            spOnClick       = serializedObject.FindProperty("OnClick");
+            spOutlineMat    = serializedObject.FindProperty("outlineMat");
+            spSr            = serializedObject.FindProperty("sr");
         }
 
         public override void OnInspectorGUI()
@@ -504,6 +530,8 @@ namespace UnityEditor
             EditorGUILayout.PropertyField(spOnClick);
 
             EditorGUILayout.Space(4);
+            EditorGUILayout.PropertyField(spOutlineMat);
+            EditorGUILayout.PropertyField(spSr);
 
             serializedObject.ApplyModifiedProperties();
         }
