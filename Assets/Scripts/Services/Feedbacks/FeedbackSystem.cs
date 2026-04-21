@@ -21,6 +21,7 @@ public class FeedbackSystem : IFeedback, IInitializable
     {
         _eventBus.Subscribe<OrderResult>(CallFeedbacks);
         _eventBus.Subscribe<OnYogurtSpawn>(CallFeedbacks);
+        _eventBus.Subscribe<OnOrderSpawn>(CallFeedbacks);
     }
     public void CallFeedbacks<T>(T evt)
     {

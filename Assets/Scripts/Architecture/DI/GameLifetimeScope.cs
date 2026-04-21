@@ -14,6 +14,7 @@ public class GameLifetimeScope : LifetimeScope
 
         builder.Register<IFeedbackHandler, OrderCompleteFeedback>(Lifetime.Scoped);
         builder.Register<IFeedbackHandler, YogurtSpawnFeedback>(Lifetime.Scoped);
+        builder.Register<IFeedbackHandler, OrderSpawnFeedback>(Lifetime.Scoped);
         builder.RegisterEntryPoint<FeedbackSystem>();
 
         builder.RegisterComponent(GameLoopManager.Instance);

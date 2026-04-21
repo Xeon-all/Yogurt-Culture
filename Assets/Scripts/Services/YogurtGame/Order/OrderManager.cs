@@ -24,7 +24,10 @@ public struct OrderResult
     public int ReputationLoss;
     public Vector2 pos;
 }
+public struct OnOrderSpawn
+{
 
+}
 public class OrderManager : Singleton<OrderManager>
 {
     public enum Difficulty { Low, Mid, High }
@@ -40,7 +43,7 @@ public class OrderManager : Singleton<OrderManager>
         public string ID;
         public GameObject OrderEntity;
         public Transform parent;
-        public List<TagData> DemandTags = new();
+        public List<IOrderDemand> Demands = new();
         public Difficulty Difficulty = Difficulty.Low;
         public int Price = 10;
         public int FlavorExpec;
@@ -150,12 +153,13 @@ public class OrderManager : Singleton<OrderManager>
     {
         _autoAddTimer = 0f;
         OnUpdate += TempAddOrder;
-        TriggerInitialOrder();
+        AddOrder();
     }
-    public void StopOrder()
+    public void TerminateOrder()
     {
         _autoAddTimer = 0f;
         OnUpdate -= TempAddOrder;
+        ClearAllOrders();
     }
     private void TempAddOrder()
     {
@@ -169,6 +173,35 @@ public class OrderManager : Singleton<OrderManager>
         }
     }
 
+    /// <summary>
+    /// 公开接口：创建一条订单，依次调用后台数据生成与游戏表现。
+    /// </summary>
+    public void AddOrder()
+    {
+        if(!OrderValidate())
+            return;
+
+        _eventBus.Publish(new OnOrderSpawn());
+
+        SpawnOrderEntity(BuildOrderData());
+    }
+
+    private bool OrderValidate()
+    {
+        if (ActiveOrderCount >= EffectiveMaxOrder) return false;
+        if (GetNextFreeSlot() < 0)
+        {
+            Debug.Log("OrderManager: 没有可用的订单槽位。");
+            return false;
+        }
+        
+        if (orderPrefabs == null || orderPrefabs.Count == 0)
+        {
+            Debug.LogWarning("OrderManager: 没有可用的订单 prefab。");
+            return false;
+        }
+        return true;
+    }
     #endregion
 
     #region 后台数据
@@ -179,31 +212,19 @@ public class OrderManager : Singleton<OrderManager>
     /// 低分配 2 点，中分配 3 点，高分配 4 点。
     /// 每点从 YogurtTag（除 None）中随机选一个 Tag 累加数值。
     /// </summary>
-    private Order AppendOrderData()
+    private Order BuildOrderData()
     {
-        if (orderPrefabs == null || orderPrefabs.Count == 0)
-        {
-            Debug.LogWarning("OrderManager: 没有可用的订单 prefab。");
-            return null;
-        }
 
         Order newOrder = new Order();
-        int randomIndex = UnityEngine.Random.Range(0, orderPrefabs.Count);
-        newOrder.OrderEntity = orderPrefabs[randomIndex];
+        newOrder.OrderEntity = orderPrefabs[UnityEngine.Random.Range(0, orderPrefabs.Count)];
         newOrder.ID = newOrder.OrderEntity.name;
 
         newOrder.Difficulty = RollDifficulty();
         newOrder.Price = GetPrice(newOrder.Difficulty);
-        newOrder.FlavorExpec = GetTagPoints(newOrder.Difficulty);
-        newOrder.DemandTags = GenerateDemandTags(newOrder.FlavorExpec);
-
-        int slotIndex = GetNextFreeSlot();
-        if (slotIndex < 0)
-        {
-            Debug.Log("OrderManager: 没有可用的订单槽位。");
-            return null;
-        }
-        newOrder.SlotIndex = slotIndex;
+        int points = GetPoints(newOrder.Difficulty);
+        newOrder.FlavorExpec = points * 5;
+        newOrder.Demands = GenerateDemands(points);
+        newOrder.SlotIndex = GetNextFreeSlot();
 
         return newOrder;
     }
@@ -241,7 +262,7 @@ public class OrderManager : Singleton<OrderManager>
     /// <summary>
     /// 根据难度获取 Tag 点数。
     /// </summary>
-    private int GetTagPoints(Difficulty difficulty)
+    private int GetPoints(Difficulty difficulty)
     {
         return difficulty switch
         {
@@ -251,72 +272,21 @@ public class OrderManager : Singleton<OrderManager>
             _ => 2
         };
     }
-
-    /// <summary>
-    /// 生成指定点数的 TagData 需求。
-    /// 优先从当前已激活的 Topping 支持的 Tag 中抽取，
-    /// 若池为空则回退到非 None 的 YogurtTag 枚举池。
-    /// 每点随机选一个 Tag 累加数值后合并同 Tag。
-    /// </summary>
-    private List<TagData> GenerateDemandTags(int totalPoints)
+    private List<IOrderDemand> GenerateDemands(int totalPoints)
     {
-        var result = new List<TagData>();
+        var demands = new List<IOrderDemand>();
+        demands.Add(new FlavorDemand());
 
-        // Step 1: 从已激活 Topping 的 Tag 集合构建候选池
-        var candidatePool = new List<YogurtTag>();
-        var activeToppings = YogurtGameBoard.Instance != null
-            ? YogurtGameBoard.Instance.GetAllActiveToppings()
-            : null;
-
-        if (activeToppings != null && activeToppings.Count > 0)
+        var tagDemand = new TagDemand
         {
-            foreach (var topping in activeToppings)
-            {
-                var tags = YogurtGameBoard.Instance.GetToppingTags(topping.ID);
-                if (tags == null) continue;
-                foreach (var tagData in tags)
-                {
-                    if (tagData.Tag != YogurtTag.None && !candidatePool.Contains(tagData.Tag))
-                    {
-                        candidatePool.Add(tagData.Tag);
-                    }
-                }
-            }
-        }
-
-        // Step 2: 若候选池为空，回退到枚举池
-        if (candidatePool.Count == 0)
-        {
-            candidatePool.AddRange(
-                Enum.GetValues(typeof(YogurtTag))
-                    .Cast<YogurtTag>()
-                    .Where(t => t != YogurtTag.None)
-            );
-        }
-
-        if (candidatePool.Count == 0)
-        {
-            Debug.LogWarning("OrderManager: 没有可用的 Tag 来生成订单需求。");
-            return result;
-        }
-
-        // Step 3: 按点数随机分配
-        for (int i = 0; i < totalPoints; i++)
-        {
-            YogurtTag randomTag = candidatePool[UnityEngine.Random.Range(0, candidatePool.Count)];
-            int existingIdx = result.FindIndex(t => t.Tag == randomTag);
-            if (existingIdx >= 0)
-            {
-                var existing = result[existingIdx];
-                result[existingIdx] = new TagData(existing.Tag, existing.Value + 1);
-            }
-            else
-            {
-                result.Add(new TagData(randomTag, 1));
-            }
-        }
-
-        return result;
+            demandTag = YogurtTag.sweet,
+            minVal    = 2,
+            maxVal    = 3,
+            score     = 10,
+            panelty   = 4
+        };
+        demands.Add(tagDemand);
+        return demands;
     }
 
     #endregion
@@ -342,31 +312,6 @@ public class OrderManager : Singleton<OrderManager>
     }
     
     #endregion
-
-    /// <summary>
-    /// 公开接口：创建一条订单，依次调用后台数据生成与游戏表现。
-    /// </summary>
-    public Order AddOrder()
-    {
-        if (ActiveOrderCount >= EffectiveMaxOrder) return null;
-
-        Order newOrder = AppendOrderData();
-        if (newOrder == null) return null;
-
-        AudioManager.Instance.PlaySFX("orderSpawn");
-
-        SpawnOrderEntity(newOrder);
-        return newOrder;
-    }
-
-    /// <summary>
-    /// 0 时刻触发一次自动添加。
-    /// </summary>
-    [ContextMenu("Trigger Initial Order")]
-    public void TriggerInitialOrder()
-    {
-        AddOrder();
-    }
 
     /// <summary>
     /// 清理所有已存在的订单实体（MorningOp 退出时调用）。

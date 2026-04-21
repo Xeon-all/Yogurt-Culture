@@ -41,29 +41,37 @@ public class OrderEntity : MonoBehaviour
     private void BuildContent()
     {
         var root = contentRoot != null ? contentRoot : transform;
-        ClearChildren(root);
+        foreach (Transform child in root)
+            Destroy(child.gameObject);
 
+        CreateDisplay();
+    }
+    private void CreateDisplay()
+    {
         if (textLinePrefab == null)
         {
             Debug.LogWarning("[OrderEntity] textLinePrefab is not assigned, skipping content build.");
             return;
         }
 
+        DebugContentBuild();
+    }
+    private void DebugContentBuild()
+    {
         // 第一行：口味需求
-        AppendLine(root, $"口味值: {orderData?.FlavorExpec ?? 0}", 0);
+        AppendLine(contentRoot, $"口味值: {orderData?.FlavorExpec ?? 0}", 0);
 
         // 后续每行：各 TagData
-        var demandTags = orderData?.DemandTags;
-        if (demandTags != null)
+        var demands = orderData?.Demands;
+        if (demands != null)
         {
-            for (int i = 0; i < demandTags.Count; i++)
+            for (int i = 0; i < demands.Count; i++)
             {
-                var tag = demandTags[i];
-                AppendLine(root, $"{tag.Tag}(需求:{tag.Value})", i + 1);
+                if(demands[i] is TagDemand tag)
+                    AppendLine(contentRoot, $"{tag.demandTag}{tag.minVal} - {tag.maxVal}", i + 1);
             }
         }
     }
-
     private void AppendLine(Transform root, string content, int index)
     {
         var line = Instantiate(textLinePrefab, root);
@@ -84,22 +92,12 @@ public class OrderEntity : MonoBehaviour
         }
     }
 
-    private void ClearChildren(Transform parent)
-    {
-        foreach (Transform child in parent)
-        {
-            Destroy(child.gameObject);
-        }
-    }
-
     /// <summary>
     /// 玩家 yogurt 与该订单碰撞时由 YogurtInstance 调用。
     /// </summary>
     public void TrySubmit(YogurtData yogurt)
     {
         if (yogurt == null) return;
-        Debug.Log($"[OrderEntity] ========== 订单提交判定 ==========\n" +
-                  $"订单需求: {FormatDemandTags(orderData?.DemandTags)}");
         var result = OrderManager.Instance.GetOrderResult(orderData, Match(yogurt), CalculateProvidedFlavor(yogurt));
         StartCoroutine(DissolveAndDestroy());
         OrderManager.Instance.OrderComplete(result);
@@ -113,12 +111,6 @@ public class OrderEntity : MonoBehaviour
                   $"累计需求值（dotProduct）: {matchFlavor}，需求阈值（totalDemandValue）: {orderData.FlavorExpec}，结果: {matchFlavor >= orderData.FlavorExpec}");
 
         return matchFlavor >= orderData.FlavorExpec;
-    }
-
-    private string FormatDemandTags(List<TagData> tags)
-    {
-        if (tags == null || tags.Count == 0) return "(无)";
-        return string.Join(", ", tags.ConvertAll(t => $"{t.Tag}(需求:{t.Value})"));
     }
 
     private string FormatYogurtTags(YogurtData yogurt)
@@ -156,18 +148,13 @@ public class OrderEntity : MonoBehaviour
     /// </summary>
     private int CalculateProvidedFlavor(YogurtData yogurt)
     {
-        if (yogurt == null) return 0;
-        if (orderData == null || yogurt == null) return 0;
+        List<IOrderDemand> demands = orderData.Demands;
+        if (demands.Count == 0) return 0;
 
-        List<TagData> demandTags = orderData.DemandTags ?? new();
-        if (demandTags.Count == 0) return 0;
+        int output = 0;
 
-        int dotProduct = 0;
-
-        foreach (TagData demand in demandTags)
-        {
-            dotProduct += demand.Value * yogurt.GetTagValue(demand.Tag);
-        }
-        return dotProduct + yogurt.Exflavor;
+        foreach (var demand in demands)
+            output += demand.GetScore(yogurt);
+        return output;
     }
 }

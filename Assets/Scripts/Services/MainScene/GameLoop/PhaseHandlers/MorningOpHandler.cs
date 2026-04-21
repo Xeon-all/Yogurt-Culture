@@ -40,8 +40,7 @@ public class MorningOpHandler : PhaseHandlerBase
         base.OnPhaseExit(data);
         OrderManager.Instance.OnOrderCompleted -= OnOrderCompleted;
 
-        OrderManager.Instance.StopOrder();
-        OrderManager.Instance.ClearAllOrders();
+        OrderManager.Instance.TerminateOrder();
 
         var manager = _game.npcManager;
         manager.GetComponent<NpcManager>().ClearAllNpcs();

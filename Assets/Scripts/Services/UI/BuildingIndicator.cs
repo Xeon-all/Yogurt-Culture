@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    #region property
     [Header("Brackets")]
     [Tooltip("四个角使用同一张图旋转获得，拖入左上角素材即可")]
     public Sprite cornerSprite;
@@ -69,7 +70,8 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     // 世界空间下的四个角基准位置（不含浮动偏移）
     private Vector2 _pTL, _pTR, _pBL, _pBR;
-
+    #endregion
+    #region 生命周期
     void Start()
     {
         Init();
@@ -80,6 +82,20 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
         CreateCorners();
         HideCorners();
         RefreshPositions();
+        backUpMat = sr.material;
+    }
+    // ---------- 生命周期结束后清理 ----------
+
+    void OnDestroy()
+    {
+        DestroyCorners();
+    }
+
+    public void Cleanup()
+    {
+        DestroyCorners();
+        enabled = false;
+        HideOutline();
     }
 
     void Update()
@@ -110,7 +126,7 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
             ApplyScale(1f);
         }
     }
-
+    #endregion
     public void OnPointerEnter(PointerEventData eventData)
     {
         _visible = true;
@@ -131,18 +147,6 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
         OnClick?.Invoke();
     }
     #region 括弧效果
-    // ---------- 生命周期结束后清理 ----------
-
-    void OnDestroy()
-    {
-        DestroyCorners();
-    }
-
-    public void Cleanup()
-    {
-        DestroyCorners();
-        enabled = false;
-    }
 
     private void DestroyCorners()
     {
@@ -371,7 +375,6 @@ public class BuildingIndicator : MonoBehaviour, IPointerEnterHandler, IPointerEx
             Debug.LogWarning("BuildingIndicator 要求手动挂载 spriterenderer");
             return;
         }
-        backUpMat = sr.material;
         sr.material = outlineMat;
     }
     private void HideOutline()
