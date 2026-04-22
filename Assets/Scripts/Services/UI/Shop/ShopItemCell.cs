@@ -41,7 +41,7 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
 
         if (stockText != null)
         {
-            int count = YogurtGameBoard.Instance.GetToppingCount(Item.Data.ID);
+            int count = YogurtGameBoard.Instance.Get<ToppingData>(Item.Data.ID).Count;
             stockText.text = $"{count}";
         }
     }
@@ -61,17 +61,15 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
         if (Item?.Data == null) return;
 
         string id = Item.Data.ID;
-        var toppingItem = YogurtGameBoard.Instance.GetToppingItem(id);
+        var toppingItem = YogurtGameBoard.Instance.Get<ToppingData>(id);
         if (toppingItem == null)
         {
             Debug.LogWarning($"[ShopItemCell] ToppingItem not found in repository: {id}");
             return;
         }
 
-        int previousCount = toppingItem.Count;
         EconomyManager.Instance.AddMoney(-Item.Data.Price * amount);
-        YogurtGameBoard.Instance.RestoreTopping(id, amount);
-        int newCount = toppingItem.Count;
+        YogurtGameBoard.Instance.Restore<ToppingData>(id, amount);
 
         rootUI.RefreshMoney();
         RefreshDisplay();

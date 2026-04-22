@@ -47,7 +47,7 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
         yield return new WaitForSeconds(tooltipDelay);
 
         if (Item?.Data == null) yield break;
-        var tagDatas = YogurtData.ParseTags(Item.Data.Tags);
+        var tagDatas = YogurtData.ParseTags((Item.Data as ToppingData).Tags);
         if (tagDatas.Count == 0) yield break;
 
         string content = string.Join("\n", tagDatas.ConvertAll(t => $"{t.Tag}({t.Value})"));
@@ -79,7 +79,7 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
         switch(GameLoopManager.Instance.CurrentPhase)
         {
             case GamePhase.Preparation:
-                YogurtGameBoard.Instance.RestoreTopping(item);
+                YogurtGameBoard.Instance.Restore<ToppingData>(item.Data.ID, item.Count);
                 break;
             case GamePhase.MorningOp:
                 Item.Count += item.Count;

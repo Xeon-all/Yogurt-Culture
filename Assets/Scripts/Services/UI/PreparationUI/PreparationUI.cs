@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using Excel2Unity;
 using TMPro;
+using VContainer;
+using VContainer.Unity;
 
 public class PreparationUI : MonoBehaviour
 {
@@ -25,7 +27,12 @@ public class PreparationUI : MonoBehaviour
     private List<RectTransform> _anchors = new();
     private List<GameObject> _instantiatedItems = new();
     private bool _initialized = false;
-
+    private IEventBus _eventBus;
+    [Inject]
+    public void Construct(IEventBus eventBus)
+    {
+        _eventBus = eventBus;
+    }
     public void InitData()
     {
         if (_initialized) return;
@@ -37,6 +44,8 @@ public class PreparationUI : MonoBehaviour
         SetupButtons();
         InstantiateAllItems();
         ShowPage(0);
+        _eventBus.Subscribe<OnItemConsume>((_) => RefreshDisplay());
+        _eventBus.Subscribe<OnItemRestore>((_) => RefreshDisplay());
     }
 
     /// <summary>
@@ -80,11 +89,11 @@ public class PreparationUI : MonoBehaviour
     private void LoadToppingData()
     {
         _toppingList.Clear();
-        var allToppings = YogurtGameBoard.Instance.GetAllActiveToppings();
+        var allToppings = YogurtGameBoard.Instance.GetAllActive<ToppingData>();
         foreach (var topping in allToppings)
         {
-            if (topping == null || string.IsNullOrWhiteSpace(topping.ID)) continue;
-            _toppingList.Add(YogurtGameBoard.Instance.GetToppingItem(topping.ID));
+            if (topping == null || string.IsNullOrWhiteSpace(topping.Data.ID)) continue;
+            _toppingList.Add(new ToppingItem(topping.Data));
         }
     }
 

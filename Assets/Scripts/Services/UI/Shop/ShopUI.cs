@@ -111,11 +111,11 @@ public class ShopUI : MonoBehaviour
     private void LoadShopItemData()
     {
         _shopItemList.Clear();
-        var allToppings = YogurtGameBoard.Instance.GetAllActiveToppings();
+        var allToppings = YogurtGameBoard.Instance.GetAllActive<ToppingData>();
         foreach (var topping in allToppings)
         {
-            if (topping == null || string.IsNullOrWhiteSpace(topping.ID)) continue;
-            var toppingItem = new ToppingItem(topping);
+            if (topping == null || string.IsNullOrWhiteSpace(topping.Data.ID)) continue;
+            var toppingItem = new ToppingItem(topping.Data);
             _shopItemList.Add(toppingItem);
         }
         // Debug.Log($"[ShopUI] Loaded {_shopItemList.Count} items from YogurtGameBoard.");

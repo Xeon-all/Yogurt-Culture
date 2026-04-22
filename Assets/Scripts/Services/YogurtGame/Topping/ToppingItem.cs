@@ -1,17 +1,11 @@
 using System;
+using Excel2Unity;
 using UnityEngine;
 
 [Serializable]
-public class ToppingItem
+public class ToppingItem : Itembase<ToppingData>
 {
-    public ToppingData Data;
-    public int Count;
-    public bool IsActive;
-
+    // public override ToppingData Data { get ; set ; }
     public ToppingItem(ToppingData data, int initCount = 10, bool isActive = true)
-    {
-        Data = data;
-        Count = Mathf.Max(0, initCount);
-        IsActive = isActive;
-    }
+        :base(data, initCount, isActive){}
 }

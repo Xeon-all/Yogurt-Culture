@@ -1,23 +1,38 @@
 using System.Collections.Generic;
 using UnityEngine;
-
-public class ToppingDataBase
+using Excel2Unity;
+using System;
+public interface IDatabase
 {
-    private readonly Dictionary<string, ToppingItem> _inventory = new();
-
-    public void InitializeAll(int defaultCount = 10, bool defaultActive = true)
+    object this[string id] { get; }
+    object GetItem(string id);
+    int GetCount(string id);
+    void SetCount(string id, int count);
+    int Consume(string id, int amount = 1);
+    void Restore(string id, int amount);
+    bool IsAvailable(string id);
+    bool GetActive(string id);
+    void SetActive(string id, bool isActive);
+    List<object> GetAllActiveItems();
+    List<object> GetAllItems();
+}
+public abstract class Database<T> : IDatabase where T : TableDataBase
+{
+    protected readonly Dictionary<string, Itembase<T>> _inventory = new();
+    
+    public abstract string TableShortName { get; }
+    public Database(T[] rows)
     {
-        _inventory.Clear();
-        var allToppings = YogurtGameBoard.Instance.GetAllToppings();
-        foreach (var topping in allToppings)
-        {
-            if (topping == null || string.IsNullOrWhiteSpace(topping.ID))
-                continue;
-            _inventory[topping.ID] = new ToppingItem(topping, defaultCount, defaultActive);
-        }
+        _inventory = new();
+        foreach(var item in rows)
+            _inventory.Add(
+                item.ID, 
+                new Itembase<T>(item)
+            );
     }
-
-    public ToppingItem GetItem(string id)
+    public object this[string id] => GetItem(id);
+    
+    public object GetItem(string id)
     {
         _inventory.TryGetValue(id, out var item);
         return item;
@@ -46,11 +61,11 @@ public class ToppingDataBase
         return actual;
     }
 
-    public void Restore(ToppingItem _item)
+    public void Restore(string id, int amount)
     {
-        if (!_inventory.TryGetValue(_item.Data.ID, out var item))
+        if (!_inventory.TryGetValue(id, out var item))
             return;
-        item.Count += _item.Count;
+        item.Count += amount;
     }
 
     public bool IsAvailable(string id)
@@ -71,9 +86,9 @@ public class ToppingDataBase
         }
     }
 
-    public List<ToppingItem> GetAllActiveItems()
+    public List<object> GetAllActiveItems()
     {
-        var result = new List<ToppingItem>();
+        var result = new List<object> ();
         foreach (var item in _inventory.Values)
         {
             if (item.IsActive)
@@ -82,13 +97,8 @@ public class ToppingDataBase
         return result;
     }
 
-    public List<ToppingItem> GetAllItems()
+    public List<object> GetAllItems()
     {
-        var result = new List<ToppingItem>();
-        foreach (var item in _inventory.Values)
-        {
-            result.Add(item);
-        }
-        return result;
+        return new List<object>(_inventory.Values);
     }
 }

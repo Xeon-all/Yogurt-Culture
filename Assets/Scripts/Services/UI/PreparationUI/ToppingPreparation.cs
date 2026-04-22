@@ -10,7 +10,7 @@ public class ToppingPreparation : SpawnDragger
 
     public override void RestoreTopping(ToppingItem item)
     {
-        YogurtGameBoard.Instance.RestoreTopping(item);
+        YogurtGameBoard.Instance.Restore<ToppingData>(item.Data.ID, item.Count);
     }
 
     protected override ToppingItem ConstructItem()
@@ -21,7 +21,7 @@ public class ToppingPreparation : SpawnDragger
     public void Refresh()
     {
         if (Item?.Data == null) return;
-        Item.Count = YogurtGameBoard.Instance.GetToppingCount(Item.Data.ID);
+        Item.Count = YogurtGameBoard.Instance.Get<ToppingData>(Item.Data.ID).Count;
         UpdateDisplay();
     }
     
@@ -45,7 +45,7 @@ public class ToppingPreparation : SpawnDragger
     public override void OnPointerDown(PointerEventData eventData)
     {
         base.OnPointerDown(eventData);
-        YogurtGameBoard.Instance.ConsumeTopping(Item.Data.ID, Item.Count);
+        YogurtGameBoard.Instance.Consume<ToppingData>(Item.Data.ID, Item.Count);
     }
 
     public string GetID() => Item?.Data?.ID;
