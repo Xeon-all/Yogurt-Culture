@@ -5,6 +5,7 @@ public struct OnYogurtSpawn
 {
     public Transform yogurt;
 }
+
 /// <summary>
 /// 酸奶工厂：负责管理制作中的酸奶实例（activeYogurt），
 /// 以及将 YogurtData 数据转化为 YogurtInstance 画面表现。
@@ -12,11 +13,6 @@ public struct OnYogurtSpawn
 /// </summary>
 public class YogurtFactory : Singleton<YogurtFactory>
 {
-    /// <summary>
-    /// 默认酸奶 Prefab 路径（相对于 Resources）
-    /// </summary>
-    private const string DEFAULT_YOGURT_PREFAB_PATH = "Prefabs/GameFunc/BaseYogurt";
-
     /// <summary>
     /// 当前制作中的酸奶实例（全局唯一），持有 YogurtData 组件作为数据源
     /// </summary>
@@ -51,10 +47,10 @@ public class YogurtFactory : Singleton<YogurtFactory>
             activeYogurt = null;
         }
 
-        var prefab = Resources.Load<GameObject>(DEFAULT_YOGURT_PREFAB_PATH);
+        var prefab = Resources.Load<GameObject>(YogurtGameBoard.BASE_YOGURT_PREFAB);
         if (prefab == null)
         {
-            Debug.LogError($"[YogurtFactory] Failed to load prefab at path: {DEFAULT_YOGURT_PREFAB_PATH}");
+            Debug.LogError($"[YogurtFactory] Failed to load prefab at path: {YogurtGameBoard.BASE_YOGURT_PREFAB}");
             return;
         }
 

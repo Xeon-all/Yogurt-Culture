@@ -23,7 +23,6 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
         RefreshDisplay();
     }
     
-    private const string SPRITEPATH = "Art/Yogurt/Topping/";
     public void RefreshDisplay()
     {
         if (Item?.Data == null) return;
@@ -33,7 +32,7 @@ public class ShopItemCell : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
         if(!string.IsNullOrEmpty(Item.Data.ItemIcon))
         {
             nameText.text = "";
-            var sprite = Resources.Load<Sprite>(SPRITEPATH + Item.Data.ItemIcon);
+            var sprite = Resources.Load<Sprite>(YogurtGameBoard.TOPPING_SPRITE + Item.Data.ItemIcon);
             if(sprite != null)
                 GetComponent<Image>().sprite = sprite;
         }

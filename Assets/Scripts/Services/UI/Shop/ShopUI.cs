@@ -182,7 +182,7 @@ public class ShopUI : MonoBehaviour
 
     public void SetupIntro(ToppingItem item)
     {
-        var path = "Art/Yogurt/Topping/" + item.Data.ItemIcon;
+        var path = YogurtGameBoard.TOPPING_SPRITE + item.Data.ItemIcon;
         var sprite = Resources.Load<Sprite>(path);
         if(sprite)
             introIcon.sprite = sprite;

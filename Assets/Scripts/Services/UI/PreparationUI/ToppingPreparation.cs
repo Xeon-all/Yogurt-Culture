@@ -25,7 +25,6 @@ public class ToppingPreparation : SpawnDragger
         UpdateDisplay();
     }
     
-    private const string SPRITEPATH = "Art/Yogurt/Topping/";
     private void UpdateDisplay()
     {
         if (Item == null) return;
@@ -35,7 +34,7 @@ public class ToppingPreparation : SpawnDragger
         if(!string.IsNullOrEmpty(Item.Data.ItemIcon))
         {
             _tmp.text = "";
-            var sprite = Resources.Load<Sprite>(SPRITEPATH + Item.Data.ItemIcon);
+            var sprite = Resources.Load<Sprite>(YogurtGameBoard.TOPPING_SPRITE + Item.Data.ItemIcon);
             if(sprite != null)
                 GetComponent<Image>().sprite = sprite;
         }

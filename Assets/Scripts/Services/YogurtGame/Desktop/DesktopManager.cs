@@ -2,15 +2,13 @@ using UnityEngine;
 
 public class DesktopManager : Singleton<DesktopManager>
 {
-    private const string PREFABFILE = "Prefabs/GameFunc/";
-    private const string SPRITEPATH = "Art/Yogurt/Topping/";
 
     public GameObject SpawnToppingDragger(ToppingItem item)
     {
         if (item?.Data == null) return null;
 
-        var draggerPrefab = Resources.Load<GameObject>(PREFABFILE + item.Data.DraggerName);
-        var draggerSprite = Resources.Load<Sprite>(SPRITEPATH + item.Data.DraggerSprite);
+        var draggerPrefab = Resources.Load<GameObject>(YogurtGameBoard.DRAGGER_PREFAB + item.Data.DraggerName);
+        var draggerSprite = Resources.Load<Sprite>(YogurtGameBoard.TOPPING_SPRITE + item.Data.DraggerSprite);
         if (draggerPrefab == null) return null;
 
         Vector3 mouseScreen = Input.mousePosition;

@@ -12,6 +12,19 @@ using YogurtCulture.GameLoop;
 [DefaultExecutionOrder(-1)]
 public class YogurtGameBoard : Singleton<YogurtGameBoard>
 {
+    #region 静态路径常量（供全局统一访问）
+
+    /// <summary>默认酸奶 Prefab 路径（相对于 Resources）</summary>
+    public const string BASE_YOGURT_PREFAB = "Prefabs/GameFunc/BaseYogurt";
+
+    /// <summary>拖拽器 Prefab 目录路径（相对于 Resources）</summary>
+    public const string DRAGGER_PREFAB = "Prefabs/GameFunc/";
+
+    /// <summary>Topping 资源目录路径（相对于 Resources）</summary>
+    public const string TOPPING_SPRITE = "Art/Yogurt/Topping/";
+
+    #endregion
+
     // public static YogurtGameBoard Instance { get; private set; }
 
     [Header("Data")]

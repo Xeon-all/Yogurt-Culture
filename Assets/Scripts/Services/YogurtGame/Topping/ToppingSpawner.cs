@@ -129,10 +129,9 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
         // }
     }
 
-    private const string SPRITEPATH = "Art/Yogurt/Topping/";
     private void ApplyVisual(ToppingData topping)
     {
-        sr.sprite = Resources.Load<Sprite>(SPRITEPATH + topping.GrooveName);
+        sr.sprite = Resources.Load<Sprite>(YogurtGameBoard.TOPPING_SPRITE + topping.GrooveName);
         ColorUtility.TryParseHtmlString(topping.color, out var color);
         sr.color = color;
     }

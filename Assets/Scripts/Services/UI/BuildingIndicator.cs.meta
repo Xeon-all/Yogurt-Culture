@@ -3,7 +3,12 @@ guid: df2467f1a9c075a44b882c76bb5afbb6
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - cornerSprite: {fileID: 21300000, guid: 705ef01e3fd60214091631eff0c28d9b, type: 3}
+  - labelFont: {fileID: 11400000, guid: e04a194970f531540b3a7e8145eab121, type: 2}
+  - labelMaterial: {instanceID: 0}
+  - outlineMat: {fileID: 2100000, guid: f5ec53cf08e045648b8f12e83f281422, type: 2}
+  - sr: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
