@@ -23,6 +23,7 @@ public class YogurtGameBoard : Singleton<YogurtGameBoard>
 
     /// <summary>Topping 资源目录路径（相对于 Resources）</summary>
     public const string TOPPING_SPRITE = "Art/Yogurt/Topping/";
+    public const string YOGURT_SPRITE = "Art/Yogurt/Yogurt/";
 
     #endregion
 

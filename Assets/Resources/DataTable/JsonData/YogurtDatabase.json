@@ -5,6 +5,10 @@
     "ExFlavor": 2,
     "Capability": 10,
     "Price": 0,
-    "Tags": ""
+    "Tags": "sour,2;yogurt,2",
+    "DraggerName": "",
+    "DraggerSprite": "",
+    "ItemIcon": "",
+    "GrooveName": ""
   }
 ]

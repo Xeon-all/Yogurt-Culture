@@ -12,4 +12,8 @@ public class YogurtDatabase : TableDataBase
 	public int Capability;
 	public int Price;
 	public string Tags;
+	public string DraggerName;
+	public string DraggerSprite;
+	public string ItemIcon;
+	public string GrooveName;
 }

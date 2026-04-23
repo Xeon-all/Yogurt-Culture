@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.UI;
+using Excel2Unity;
 
-public class ToppingPreparation : SpawnDragger
+public class ToppingPreparation : SpawnDragger, IPreparationItem<ToppingData>
 {
     [SerializeField] private TextMeshProUGUI countText;
     private TextMeshProUGUI _tmp;
@@ -17,17 +18,17 @@ public class ToppingPreparation : SpawnDragger
     {
         return Item;
     }
-
-    public void Refresh()
+    public void SetUpItem(Itembase<ToppingData> item)
     {
-        if (Item?.Data == null) return;
-        Item.Count = YogurtGameBoard.Instance.Get<ToppingData>(Item.Data.ID).Count;
+        Item = item as ToppingItem;
         UpdateDisplay();
     }
     
-    private void UpdateDisplay()
+    public void UpdateDisplay()
     {
         if (Item == null) return;
+        if (Item?.Data == null) return;
+        Item.Count = YogurtGameBoard.Instance.Get<ToppingData>(Item.Data.ID).Count;
         if(_tmp == null)
             _tmp = GetComponentInChildren<TextMeshProUGUI>();
         _tmp.text = Item.Data.Name;
@@ -47,6 +48,5 @@ public class ToppingPreparation : SpawnDragger
         base.OnPointerDown(eventData);
         YogurtGameBoard.Instance.Consume<ToppingData>(Item.Data.ID, Item.Count);
     }
-
     public string GetID() => Item?.Data?.ID;
 }

@@ -138,5 +138,19 @@
     "GrooveName": "Default",
     "Descrip": "默认说明",
     "color": "#558B2F"
+  },
+  {
+    "ID": "Lemonade",
+    "Name": "柠檬汁",
+    "ExFlavor": 0,
+    "Capability": 10,
+    "Price": 5,
+    "Tags": "sour,2",
+    "DraggerName": "BaseDragger",
+    "DraggerSprite": "",
+    "ItemIcon": "",
+    "GrooveName": "Default",
+    "Descrip": "默认说明",
+    "color": "#FFEE58"
   }
 ]

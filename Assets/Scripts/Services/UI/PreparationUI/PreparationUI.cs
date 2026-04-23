@@ -5,6 +5,9 @@ using Excel2Unity;
 using TMPro;
 using VContainer;
 using VContainer.Unity;
+using System;
+using System.Linq;
+using System.Reflection;
 
 public class PreparationUI : MonoBehaviour
 {
@@ -13,19 +16,27 @@ public class PreparationUI : MonoBehaviour
     [SerializeField] private RectTransform container;
 
     [Header("Item Prefab")]
-    [SerializeField] private GameObject itemPrefab;
+    [SerializeField] private List<GameObject> prefabs;
 
     [Header("Pagination")]
     [SerializeField] private Button prevPageButton;
     [SerializeField] private Button nextPageButton;
     [SerializeField] private Text pageInfoText;
 
-    private List<ToppingItem> _toppingList = new();
+    [Header("Category Tabs")]
+    [SerializeField] private Button toppingTabButton;
+    [SerializeField] private Button yogurtTabButton;
+
+    private int _currentCategoryIndex = 0;
+
+    private List<ToppingItem> _toppingItemList = new();
+    private List<YogurtItem> _yogurtItemList = new();
+    private Dictionary<Type, object> _allItemList = new();
     private int _currentPage = 0;
     private int _totalPages = 0;
     private int _itemsPerPage;
     private List<RectTransform> _anchors = new();
-    private List<GameObject> _instantiatedItems = new();
+    private List<List<GameObject>> _itemIntansces = new();
     private bool _initialized = false;
     private IEventBus _eventBus;
     [Inject]
@@ -38,38 +49,57 @@ public class PreparationUI : MonoBehaviour
         if (_initialized) return;
         _initialized = true;
 
-        LoadToppingData();
+        LoadData();
         CollectAnchors();
-        CalculatePagination();
         SetupButtons();
         InstantiateAllItems();
-        ShowPage(0);
+        _currentCategoryIndex = -1;
+        SwitchCategory(0);
         _eventBus.Subscribe<OnItemConsume>((_) => RefreshDisplay());
         _eventBus.Subscribe<OnItemRestore>((_) => RefreshDisplay());
     }
-
+    private void LoadData()
+    {
+        _toppingItemList = YogurtGameBoard.Instance.GetAllActive<ToppingData>().Select(x => new ToppingItem(x.Data)).ToList();
+        _yogurtItemList = YogurtGameBoard.Instance.GetAllActive<YogurtDatabase>().Select(x => new YogurtItem(x.Data)).ToList();
+        _allItemList.Add(typeof(ToppingData), _toppingItemList);
+        _allItemList.Add(typeof(YogurtDatabase), _yogurtItemList);
+    }
     /// <summary>
     /// 一次性生成所有 item 实例，保存到对应 anchor，后续翻页不再实例化
     /// </summary>
     private void InstantiateAllItems()
     {
-        _instantiatedItems.Clear();
-        for (int i = 0; i < _toppingList.Count; i++)
+        _itemIntansces.Clear();
+        CreateInstancesOfType<ToppingData, ToppingItem>();
+        CreateInstancesOfType<YogurtDatabase, YogurtItem>();
+    }
+    private void CreateInstancesOfType<T, T2>() where T : TableDataBase
+    {
+        var curInstances = new List<GameObject>();
+        var list = _allItemList[typeof(T)] as List<T2>;
+        for (int i = 0; i < list.Count; i++)
         {
-            int localIndex = i % _itemsPerPage;
-            RectTransform anchor = _anchors[localIndex];
-
-            GameObject item = Instantiate(itemPrefab, anchor);
-            RectTransform itemRect = item.GetComponent<RectTransform>();
-            itemRect.anchoredPosition = Vector2.zero;
-            itemRect.anchorMin = Vector2.zero;
-            itemRect.anchorMax = Vector2.one;
-            itemRect.sizeDelta = Vector2.zero;
-            itemRect.pivot = new Vector2(0.5f, 0.5f);
-
-            _instantiatedItems.Add(item);
-            SetupItem(item, _toppingList[i]);
+            var item = GetLocatedInstance<T>(i);
+            curInstances.Add(item);
+            SetupItem(item, list[i] as Itembase<T>);
         }
+        _itemIntansces.Add(curInstances);
+    }
+    private GameObject GetLocatedInstance<T>(int i) where T : TableDataBase
+    {
+        _itemsPerPage = _anchors.Count;
+        int localIndex = i % _itemsPerPage;
+        RectTransform anchor = _anchors[localIndex];
+        GameObject prefab = prefabs.Find(x => x.GetComponent<IPreparationItem<T>>() != null);
+        GameObject item = Instantiate(prefab, anchor);
+        RectTransform itemRect = item.GetComponent<RectTransform>();
+        itemRect.anchoredPosition = Vector2.zero;
+        itemRect.anchorMin = Vector2.zero;
+        itemRect.anchorMax = Vector2.one;
+        itemRect.sizeDelta = Vector2.zero;
+        itemRect.pivot = new Vector2(0.5f, 0.5f);
+        return item;
     }
 
     /// <summary>
@@ -78,24 +108,33 @@ public class PreparationUI : MonoBehaviour
     public void RefreshDisplay(int pageIndex = -1)
     {
         if (pageIndex == -1) pageIndex = _currentPage;
+
+        var categoryInstances = _itemIntansces[_currentCategoryIndex];
+        var categoryKeys = new List<Type>(_allItemList.Keys);
+        var listType = categoryKeys[_currentCategoryIndex];
+        var listType2 = _allItemList[listType].GetType().GetGenericArguments()[0];
+        Debug.Log($"type:{listType2}, require:{typeof(Itembase<ToppingData>)}");
+
         int startIndex = pageIndex * _itemsPerPage;
-        int endIndex = Mathf.Min(startIndex + _itemsPerPage, _toppingList.Count);
+        int endIndex = Mathf.Min(startIndex + _itemsPerPage, categoryInstances.Count);
 
         for (int i = startIndex; i < endIndex; i++)
         {
-            SetupItem(_instantiatedItems[i], _toppingList[i]);
+            var method = typeof(PreparationUI)
+                .GetMethod(nameof(RefreshItemByIndex), BindingFlags.NonPublic | BindingFlags.Instance)
+                .MakeGenericMethod(listType, listType2);
+            method.Invoke(this, new object[] { categoryInstances[i], i });
         }
     }
-    private void LoadToppingData()
+
+    private void RefreshItemByIndex<T, T2>(GameObject item, int index) where 
+        T : TableDataBase where T2 : Itembase<T>
     {
-        _toppingList.Clear();
-        var allToppings = YogurtGameBoard.Instance.GetAllActive<ToppingData>();
-        foreach (var topping in allToppings)
-        {
-            if (topping == null || string.IsNullOrWhiteSpace(topping.Data.ID)) continue;
-            _toppingList.Add(new ToppingItem(topping.Data));
-        }
+        var l = _allItemList[typeof(T)];
+        var list = l as List<T2>;
+        SetupItem(item, list[index]);
     }
+    
 
     private void CollectAnchors()
     {
@@ -110,8 +149,8 @@ public class PreparationUI : MonoBehaviour
 
     private void CalculatePagination()
     {
-        _itemsPerPage = _anchors.Count;
-        _totalPages = Mathf.CeilToInt((float)_toppingList.Count / _itemsPerPage);
+        var categoryInstances = _itemIntansces[_currentCategoryIndex];
+        _totalPages = Mathf.CeilToInt((float)categoryInstances.Count / _itemsPerPage);
         if (_totalPages == 0) _totalPages = 1;
     }
 
@@ -122,11 +161,24 @@ public class PreparationUI : MonoBehaviour
 
         if (nextPageButton != null)
             nextPageButton.onClick.AddListener(OnNextPage);
+
+        toppingTabButton?.onClick.AddListener(() => SwitchCategory(0));
+        yogurtTabButton?.onClick.AddListener(() => SwitchCategory(1));
+    }
+
+    private void SwitchCategory(int index)
+    {
+        if (_currentCategoryIndex == index) return;
+
+        _currentCategoryIndex = index;
+        CalculatePagination();
+        HideOtherCategoryInstances(index);
+        ShowPage(0);
     }
 
     private void ShowPage(int pageIndex)
     {
-        if (container == null || itemPrefab == null)
+        if (container == null)
             return;
 
         RefreshPageItems(pageIndex);
@@ -143,35 +195,46 @@ public class PreparationUI : MonoBehaviour
         _currentPage = pageIndex;
     }
 
-    /// <summary>
-    /// 根据页索引切换 item 的激活状态，不销毁实例
-    /// </summary>
     private void RefreshPageItems(int pageIndex)
     {
-        int startIndex = pageIndex * _itemsPerPage;
-        int endIndex = Mathf.Min(startIndex + _itemsPerPage, _toppingList.Count);
+        var categoryInstances = _itemIntansces[_currentCategoryIndex];
 
-        for (int i = 0; i < _instantiatedItems.Count; i++)
+        int startIndex = pageIndex * _itemsPerPage;
+        int endIndex = Mathf.Min(startIndex + _itemsPerPage, categoryInstances.Count);
+
+        for (int i = 0; i < categoryInstances.Count; i++)
         {
             bool isOnPage = i >= startIndex && i < endIndex;
-            _instantiatedItems[i]?.SetActive(isOnPage);
+            categoryInstances[i]?.SetActive(isOnPage);
         }
     }
 
     private void ClearItems()
     {
-        foreach (GameObject item in _instantiatedItems)
+        foreach (var categoryInstances in _itemIntansces)
         {
-            if (item != null)
-                Destroy(item);
+            foreach (var item in categoryInstances)
+            {
+                if (item != null)
+                    Destroy(item);
+            }
         }
-        _instantiatedItems.Clear();
+        _itemIntansces.Clear();
     }
-    private void SetupItem(GameObject item, ToppingItem itemData)
+
+    private void HideOtherCategoryInstances(int exceptIndex)
     {
-        var dataCache = item.GetComponent<ToppingPreparation>();
-        dataCache.Item = itemData;
-        dataCache.Refresh();
+        for (int i = 0; i < _itemIntansces.Count; i++)
+        {
+            if (i == exceptIndex) continue;
+            foreach (var item in _itemIntansces[i])
+                item?.SetActive(false);
+        }
+    }
+    private void SetupItem<T>(GameObject item, Itembase<T> itemData) where T : TableDataBase
+    {
+        var go = item.GetComponent<IPreparationItem<T>>();
+        go.SetUpItem(itemData);
     }
 
     private void OnPrevPage()
