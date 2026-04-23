@@ -11,6 +11,7 @@ public class ToppingData : TableDataBase
 	public int ExFlavor;
 	public int Capability;
 	public int Price;
+	public bool InitActive;
 	public string Tags;
 	public string DraggerName;
 	public string DraggerSprite;

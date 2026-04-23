@@ -110,10 +110,8 @@ public class PreparationUI : MonoBehaviour
         if (pageIndex == -1) pageIndex = _currentPage;
 
         var categoryInstances = _itemIntansces[_currentCategoryIndex];
-        var categoryKeys = new List<Type>(_allItemList.Keys);
-        var listType = categoryKeys[_currentCategoryIndex];
+        var listType = _allItemList.Keys.ElementAt(_currentCategoryIndex);
         var listType2 = _allItemList[listType].GetType().GetGenericArguments()[0];
-        Debug.Log($"type:{listType2}, require:{typeof(Itembase<ToppingData>)}");
 
         int startIndex = pageIndex * _itemsPerPage;
         int endIndex = Mathf.Min(startIndex + _itemsPerPage, categoryInstances.Count);
@@ -130,9 +128,7 @@ public class PreparationUI : MonoBehaviour
     private void RefreshItemByIndex<T, T2>(GameObject item, int index) where 
         T : TableDataBase where T2 : Itembase<T>
     {
-        var l = _allItemList[typeof(T)];
-        var list = l as List<T2>;
-        SetupItem(item, list[index]);
+        SetupItem(item, (_allItemList[typeof(T)] as List<T2>)[index] );
     }
     
 

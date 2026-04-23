@@ -47,7 +47,7 @@ public class YogurtBase : MonoBehaviour, IReceiveTopping
         int count = item.Count;
         yogurtData.AddExtraFlavor(item.Data.ExFlavor * count);
 
-        var tags = YogurtData.ParseTags(item.Data.Tags);
+        var tags = YogurtTagSystem.ParseTags(item.Data.Tags);
         foreach (var tag in tags)
         {
             yogurtData.AddTag(new TagData(tag.Tag, tag.Value * count));

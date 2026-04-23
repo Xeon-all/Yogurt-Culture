@@ -36,6 +36,7 @@ public class YogurtPreparation :
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        DesktopManager.Instance.SpawnYogurt(Item.Data);
         // YogurtGameBoard.Instance.Consume<YogurtDatabase>(Item.Data.ID, Item.Count);
     }
 }

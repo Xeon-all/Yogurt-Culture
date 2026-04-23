@@ -24,10 +24,6 @@ public struct OrderResult
     public int ReputationLoss;
     public Vector2 pos;
 }
-public struct OnOrderSpawn
-{
-
-}
 public class OrderManager : Singleton<OrderManager>
 {
     public enum Difficulty { Low, Mid, High }
@@ -274,8 +270,7 @@ public class OrderManager : Singleton<OrderManager>
     }
     private List<IOrderDemand> GenerateDemands(int totalPoints)
     {
-        var demands = new List<IOrderDemand>();
-        demands.Add(new FlavorDemand());
+        var demands = new List<IOrderDemand>{new FlavorDemand()};
 
         var tagDemand = new TagDemand
         {
@@ -396,4 +391,9 @@ public class OrderManager : Singleton<OrderManager>
     }
 
     #endregion
+}
+
+public struct OnOrderSpawn
+{
+
 }

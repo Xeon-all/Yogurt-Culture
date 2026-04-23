@@ -24,11 +24,6 @@ public abstract class Database<T> : IDatabase where T : TableDataBase
     public Database(T[] rows)
     {
         _inventory = new();
-        foreach(var item in rows)
-            _inventory.Add(
-                item.ID, 
-                new Itembase<T>(item)
-            );
     }
     public object this[string id] => GetItem(id);
     

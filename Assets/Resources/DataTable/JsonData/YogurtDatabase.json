@@ -5,6 +5,7 @@
     "ExFlavor": 2,
     "Capability": 10,
     "Price": 0,
+    "InitActive": true,
     "Tags": "sour,2;yogurt,2",
     "DraggerName": "",
     "DraggerSprite": "",

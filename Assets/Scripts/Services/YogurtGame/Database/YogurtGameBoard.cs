@@ -113,6 +113,10 @@ public class YogurtGameBoard : Singleton<YogurtGameBoard>
         _databaseCache[typeof(T).Name].Consume(id, amount);
         _eventBus.Publish(new OnItemConsume{type = typeof(T), id = id, amount = amount});
     }
+    public void UnlockItem<T>(string id) where T : TableDataBase
+    {
+        _databaseCache[typeof(T).Name].SetActive(id, true);
+    }
 
     private static class JsonArrayUtility
     {
