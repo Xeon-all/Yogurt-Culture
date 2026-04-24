@@ -61,9 +61,9 @@ public class PreparationUI : MonoBehaviour
     private void LoadData()
     {
         _toppingItemList = YogurtGameBoard.Instance.GetAllActive<ToppingData>().Select(x => new ToppingItem(x.Data)).ToList();
-        _yogurtItemList = YogurtGameBoard.Instance.GetAllActive<YogurtDatabase>().Select(x => new YogurtItem(x.Data)).ToList();
+        _yogurtItemList = YogurtGameBoard.Instance.GetAllActive<YogurtData>().Select(x => new YogurtItem(x.Data)).ToList();
         _allItemList.Add(typeof(ToppingData), _toppingItemList);
-        _allItemList.Add(typeof(YogurtDatabase), _yogurtItemList);
+        _allItemList.Add(typeof(YogurtData), _yogurtItemList);
     }
     /// <summary>
     /// 一次性生成所有 item 实例，保存到对应 anchor，后续翻页不再实例化
@@ -72,7 +72,7 @@ public class PreparationUI : MonoBehaviour
     {
         _itemIntansces.Clear();
         CreateInstancesOfType<ToppingData, ToppingItem>();
-        CreateInstancesOfType<YogurtDatabase, YogurtItem>();
+        CreateInstancesOfType<YogurtData, YogurtItem>();
     }
     private void CreateInstancesOfType<T, T2>() where T : TableDataBase
     {

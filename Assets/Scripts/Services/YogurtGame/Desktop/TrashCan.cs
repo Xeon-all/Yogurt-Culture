@@ -71,14 +71,6 @@ public class TrashCan : MonoBehaviour
     {
         if (target == null) return;
 
-        YogurtData yogurtData = target.GetComponent<YogurtData>();
-        if (yogurtData != null)
-        {
-            Destroy(target);
-            Debug.Log($"[TrashCan] 已销毁 Yogurt: {target.name}");
-            return;
-        }
-
         YogurtInstance yogurtInstance = target.GetComponent<YogurtInstance>();
         if (yogurtInstance != null)
         {

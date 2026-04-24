@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
 
@@ -29,6 +30,7 @@ public class YogurtFactory : Singleton<YogurtFactory>
     public bool HasActiveYogurt => activeYogurt != null;
     public Transform BaseParent;
     public Transform ProductParent;
+    public YogurtSpawner YogurtSpawner;
     private IEventBus _eventBus;
     [Inject]
     public void Construct(IEventBus eventBus)
@@ -39,7 +41,7 @@ public class YogurtFactory : Singleton<YogurtFactory>
     /// <summary>
     /// 生成制作中酸奶
     /// </summary>
-    public void CreateBaseYogurt()
+    public void CreateBaseYogurt(YogurtItem item)
     {
         if (activeYogurt != null)
         {
@@ -56,7 +58,7 @@ public class YogurtFactory : Singleton<YogurtFactory>
 
         var instance = Instantiate(prefab, BaseParent.position, Quaternion.identity, BaseParent);
         activeYogurt = instance.GetComponent<YogurtBase>();
-
+        activeYogurt.InitWithYogurtItem(item);
         if (activeYogurt == null)
         {
             Debug.LogError("[YogurtFactory] Created prefab does not have YogurtBase component.");
@@ -75,20 +77,19 @@ public class YogurtFactory : Singleton<YogurtFactory>
             return;
         }
 
-        var yogurtData = activeYogurt.GetComponent<YogurtData>();
         var prefab = activeYogurt.Prefab;
+        activeYogurt.gameObject.SetActive(false);
+
+        _Instantiate(prefab, ProductParent.position, ProductParent);
 
         Destroy(activeYogurt.gameObject);
         activeYogurt = null;
-
-        _Instantiate(prefab, yogurtData, ProductParent.position, ProductParent);
     }
     /// <summary>
     /// 从 YogurtData 创建一个 YogurtInstance。
     /// </summary>
     public YogurtInstance _Instantiate(
         GameObject prefab,
-        YogurtData yogurtData,
         Vector3 position,
         Transform parent = null)
     {
@@ -100,16 +101,7 @@ public class YogurtFactory : Singleton<YogurtFactory>
         var instance = Instantiate(prefab, position, Quaternion.identity, parent);
         _eventBus.Publish(new OnYogurtSpawn{yogurt = instance.transform});
         var yogurtInstance = instance.GetComponent<YogurtInstance>();
-
-        var targetData = instance.GetComponent<YogurtData>();
-        if (targetData != null && yogurtData != null)
-        {
-            targetData.AddExtraFlavor(yogurtData.Exflavor);
-            foreach (var tag in yogurtData.GetIngredientTags())
-            {
-                targetData.AddTag(tag);
-            }
-        }
+        yogurtInstance.InitWithYogurt(activeYogurt);
 
         if (yogurtInstance == null)
         {
@@ -118,4 +110,44 @@ public class YogurtFactory : Singleton<YogurtFactory>
 
         return yogurtInstance;
     }
+}
+
+public class ProductData
+{
+    [Header("配料标签")]
+    [SerializeField] private List<TagData> ingredientTags = new();
+
+    [SerializeField] private int flavor = 0;
+    public int Flavor => flavor;
+    #region 数据处理
+    /// <summary>
+    /// 添加一个配料标签（TagData）
+    /// </summary>
+    public void AddTag(TagData tagData)
+    {
+        int existingIdx = ingredientTags.FindIndex(t => t.Tag == tagData.Tag);
+        if (existingIdx >= 0)
+        {
+            var existing = ingredientTags[existingIdx];
+            ingredientTags[existingIdx] = new TagData(existing.Tag, existing.Value + tagData.Value);
+        }
+        else
+        {
+            ingredientTags.Add(tagData);
+        }
+    }
+    public void AdjustFlavor(int amount)
+    {
+        flavor += amount;
+    }
+    public List<TagData> GetTags()
+    {
+        return ingredientTags;
+    }
+    public int GetTagValue(YogurtTag tag)
+    {
+        var idx = ingredientTags.FindIndex(t => t.Tag == tag);
+        return idx >= 0 ? ingredientTags[idx].Value : 0;
+    }
+    #endregion
 }

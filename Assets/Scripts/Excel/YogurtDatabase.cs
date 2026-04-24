@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 [Serializable]
 
-public class YogurtDatabase : TableDataBase
+public class YogurtData : TableDataBase
 {
 	public string Name;
 	public int ExFlavor;

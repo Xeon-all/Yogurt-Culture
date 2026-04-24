@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -80,7 +80,7 @@ public static class YogurtTagSystem
             string tagName = kv[0].Trim();
             int intValue = kv.Length > 1 && int.TryParse(kv[1].Trim(), out int parsed) ? parsed : 0;
 
-            YogurtTag tag = GetOrCreateTag(tagName);
+            YogurtTag tag = GetTag(tagName);
             result.Add(new TagData(tag, intValue));
         }
 
@@ -90,120 +90,19 @@ public static class YogurtTagSystem
     /// <summary>
     /// 根据 Tag 名称获取对应枚举值，若不存在则自动添加到枚举文件
     /// </summary>
-    private static YogurtTag GetOrCreateTag(string tagName)
+    private static YogurtTag GetTag(string tagName)
     {
-        if (string.IsNullOrWhiteSpace(tagName)) return YogurtTag.None;
-
         if (_tagNameToEnum.TryGetValue(tagName, out YogurtTag existing))
         {
             return existing;
         }
-
-        YogurtTag newTag = AddTagToEnumFile(tagName);
-        return newTag;
-    }
-
-    /// <summary>
-    /// 动态添加新 Tag 到枚举文件
-    /// </summary>
-    private static YogurtTag AddTagToEnumFile(string tagName)
-    {
-#if UNITY_EDITOR
-        string enumFilePath = Path.Combine(Application.dataPath, EnumFileRelativePath);
-        if (string.IsNullOrEmpty(enumFilePath) || !File.Exists(enumFilePath))
+        else
         {
-            Debug.LogError($"[YogurtTagSystem] Cannot find YogurtTagSystem.cs file: {enumFilePath}");
+            Debug.LogError($"Tag {tagName} not found, 要求手动在文件中添加");
             return YogurtTag.None;
         }
-
-        string[] lines = File.ReadAllLines(enumFilePath, Encoding.UTF8);
-        var sb = new StringBuilder();
-        bool foundClosingBrace = false;
-        int insertLineIndex = -1;
-
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i];
-            sb.AppendLine(line);
-
-            if (line.Trim() == "}")
-            {
-                foundClosingBrace = true;
-                insertLineIndex = i;
-                break;
-            }
-        }
-
-        if (!foundClosingBrace || insertLineIndex < 0)
-        {
-            Debug.LogError("[YogurtTagSystem] Cannot find enum closing brace");
-            return YogurtTag.None;
-        }
-
-        if (!IsValidIdentifier(tagName))
-        {
-            Debug.LogError($"[YogurtTagSystem] Invalid tag name: {tagName}");
-            return YogurtTag.None;
-        }
-
-        int maxValue = 0;
-        var assignedValues = new HashSet<int>();
-        foreach (YogurtTag existingTag in Enum.GetValues(typeof(YogurtTag)))
-        {
-            int val = Convert.ToInt32(existingTag);
-            if (assignedValues.Contains(val))
-            {
-                Debug.LogWarning($"[YogurtTagSystem] Duplicate enum value detected: {existingTag} = {val}. YogurtTagSystem.cs may need cleanup.");
-            }
-            else
-            {
-                assignedValues.Add(val);
-                if (val > maxValue) maxValue = val;
-            }
-        }
-
-        int nextValue = maxValue + 1;
-        string newEnumLine = $"    {tagName} = {nextValue},";
-
-        var newLines = new List<string>();
-        for (int i = 0; i < insertLineIndex; i++)
-        {
-            newLines.Add(lines[i]);
-        }
-        newLines.Add(newEnumLine);
-        for (int i = insertLineIndex; i < lines.Length; i++)
-        {
-            newLines.Add(lines[i]);
-        }
-
-        File.WriteAllLines(enumFilePath, newLines.ToArray(), Encoding.UTF8);
-
-#if UNITY_EDITOR
-        UnityEditor.AssetDatabase.Refresh();
-#endif
-
-        _tagNameToEnum.Clear();
-        _isInitialized = false;
-        InitTagMap();
-
-        Debug.Log($"[YogurtTagSystem] Auto-added new tag: {tagName} = {nextValue}");
-
-        return _tagNameToEnum.TryGetValue(tagName, out YogurtTag newTag) ? newTag : YogurtTag.None;
-#else
-        Debug.LogError("[YogurtTagSystem] Cannot add tags at runtime in build. Please predefine all tags.");
-        return YogurtTag.None;
-#endif
     }
 
-    /// <summary>
-    /// 验证是否为有效的 C# 标识符
-    /// </summary>
-    private static bool IsValidIdentifier(string name)
-    {
-        if (string.IsNullOrEmpty(name)) return false;
-        if (char.IsDigit(name[0])) return false;
-        return Regex.IsMatch(name, @"^[a-zA-Z_][a-zA-Z0-9_]*$");
-    }
 }
 
 /// <summary>
@@ -225,7 +124,6 @@ public struct TagData
 /// <summary>
 /// 酸奶产品标签枚举
 /// 用于标识酸奶成品、原料、配料的特性
-/// 注意：未知 Tag 会自动添加到枚举文件末尾
 /// </summary>
 public enum YogurtTag
 {
@@ -236,4 +134,5 @@ public enum YogurtTag
     rich = 4,
     fruity = 5,
     sour = 6,
+    yogurt = 7,
 }

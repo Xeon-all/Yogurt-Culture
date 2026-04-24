@@ -95,7 +95,7 @@ public class OrderEntity : MonoBehaviour
     /// <summary>
     /// 玩家 yogurt 与该订单碰撞时由 YogurtInstance 调用。
     /// </summary>
-    public void TrySubmit(YogurtData yogurt)
+    public void TrySubmit(ProductData yogurt)
     {
         if (yogurt == null) return;
         var result = OrderManager.Instance.GetOrderResult(orderData, Match(yogurt), CalculateProvidedFlavor(yogurt));
@@ -103,7 +103,7 @@ public class OrderEntity : MonoBehaviour
         OrderManager.Instance.OrderComplete(result);
     }
 
-    private bool Match(YogurtData yogurt)
+    private bool Match(ProductData yogurt) 
     {
         int matchFlavor = CalculateProvidedFlavor(yogurt);
         // 打印计算详情
@@ -113,10 +113,10 @@ public class OrderEntity : MonoBehaviour
         return matchFlavor >= orderData.FlavorExpec;
     }
 
-    private string FormatYogurtTags(YogurtData yogurt)
+    private string FormatYogurtTags(ProductData yogurt)
     {
         if (yogurt == null) return "(null)";
-        var tags = yogurt.GetIngredientTags();
+        var tags = yogurt.GetTags();
         if (tags == null || tags.Count == 0) return "无标签";
         return string.Join(", ", tags.ConvertAll(t => $"{t.Tag}(实际:{t.Value})"));
     }
@@ -146,7 +146,7 @@ public class OrderEntity : MonoBehaviour
     /// <summary>
     /// 从 yogurt 计算含附加风味值的总风味量。
     /// </summary>
-    private int CalculateProvidedFlavor(YogurtData yogurt)
+    private int CalculateProvidedFlavor(ProductData yogurt)
     {
         List<IOrderDemand> demands = orderData.Demands;
         if (demands.Count == 0) return 0;

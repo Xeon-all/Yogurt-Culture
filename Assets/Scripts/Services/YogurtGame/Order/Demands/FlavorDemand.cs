@@ -1,8 +1,8 @@
 using UnityEngine;
 public class FlavorDemand : IOrderDemand
 {
-    public int GetScore(YogurtData yogurt)
+    public int GetScore(ProductData yogurt)
     {
-        return yogurt.Exflavor;
+        return yogurt.Flavor;
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -7,31 +8,21 @@ using UnityEngine;
 /// </summary>
 public class YogurtBase : MonoBehaviour, IReceiveTopping
 {
-    [Header("Prefab 设置")]
-    [Tooltip("完成后要实例化的 YogurtInstance Prefab（可选）")]
+    public ProductData data = new();
     [SerializeField] private GameObject prefab;
 
     /// <summary>
     /// 完成后要实例化的 YogurtInstance Prefab
     /// </summary>
     public GameObject Prefab => prefab;
-
-    /// <summary>
-    /// 当前口味值（只读）
-    /// </summary>
-    public int Flavor => Mathf.RoundToInt(GetComponent<YogurtData>().Exflavor);
-
-    public Action OnReceiveTopping;
-
-    /// <summary>
-    /// 调整口味值（可以为正或负）
-    /// </summary>
-    public void AdjustFlavor(int delta)
+    public void InitWithYogurtItem(YogurtItem item)
     {
-        var yogurtData = GetComponent<YogurtData>();
-        if (yogurtData == null) return;
-
-        yogurtData.AddExtraFlavor(delta);
+        if (item == null) return;
+        data = new();
+        data.AdjustFlavor(item.Data.ExFlavor);
+        var tags = item.Tags;
+        foreach (var tag in tags)
+            data.AddTag(tag);
     }
 
 
@@ -41,18 +32,11 @@ public class YogurtBase : MonoBehaviour, IReceiveTopping
     {
         if (item?.Data == null) return;
 
-        var yogurtData = GetComponent<YogurtData>();
-        if (yogurtData == null) return;
-
         int count = item.Count;
-        yogurtData.AddExtraFlavor(item.Data.ExFlavor * count);
-
-        var tags = YogurtTagSystem.ParseTags(item.Data.Tags);
+        data.AdjustFlavor(item.Data.ExFlavor * count);
+        var tags = item.Tags;
         foreach (var tag in tags)
-        {
-            yogurtData.AddTag(new TagData(tag.Tag, tag.Value * count));
-        }
-        OnReceiveTopping?.Invoke();
+            data.AddTag(tag);
     }
 
     #endregion

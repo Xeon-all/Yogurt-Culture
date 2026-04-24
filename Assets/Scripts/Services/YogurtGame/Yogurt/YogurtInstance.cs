@@ -46,7 +46,7 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     /// </summary>
     private bool isReturning;
 
-    private YogurtData yogurtData;
+    private ProductData data = new();
 
     private void Awake()
     {
@@ -57,12 +57,10 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
         EnsureEventSystem();
         EnsurePhysics2DRaycaster();
-
-        yogurtData = GetComponent<YogurtData>();
-
-        if (orderLayerMask == 0)
-        {
-        }
+    }
+    public void InitWithYogurt(YogurtBase yogurt)
+    {
+        data = yogurt.data;
     }
 
     private void EnsureEventSystem()
@@ -208,10 +206,8 @@ public class YogurtInstance : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         int hitCount = selfCollider.OverlapCollider(filter, results);
         if (hitCount > 0)
         {
-            if (yogurtData != null)
-            {
-                results[0].GetComponent<OrderEntity>()?.TrySubmit(yogurtData);
-            }
+            results[0].GetComponent<OrderEntity>()?.TrySubmit(data);
+            
             Destroy(gameObject);
             return true;
         }

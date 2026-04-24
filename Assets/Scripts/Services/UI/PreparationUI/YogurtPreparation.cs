@@ -4,12 +4,12 @@ using TMPro;
 using UnityEngine.UI;
 
 public class YogurtPreparation : 
-    MonoBehaviour, IPreparationItem<YogurtDatabase>, IPointerClickHandler
+    MonoBehaviour, IPreparationItem<YogurtData>, IPointerClickHandler
 {
     private YogurtItem Item;
     [SerializeField] private TextMeshProUGUI countText;
     private TextMeshProUGUI _tmp;
-    public void SetUpItem(Itembase<YogurtDatabase> item)
+    public void SetUpItem(Itembase<YogurtData> item)
     {
         Item = item as YogurtItem;
         UpdateDisplay();
@@ -18,7 +18,7 @@ public class YogurtPreparation :
     {
         if (Item == null) return;
         if (Item?.Data == null) return;
-        Item.Count = YogurtGameBoard.Instance.Get<YogurtDatabase>(Item.Data.ID).Count;
+        Item.Count = YogurtGameBoard.Instance.Get<YogurtData>(Item.Data.ID).Count;
         if(_tmp == null)
             _tmp = GetComponentInChildren<TextMeshProUGUI>();
         _tmp.text = Item.Data.Name;
@@ -36,7 +36,6 @@ public class YogurtPreparation :
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        DesktopManager.Instance.SpawnYogurt(Item.Data);
-        // YogurtGameBoard.Instance.Consume<YogurtDatabase>(Item.Data.ID, Item.Count);
+        YogurtFactory.Instance.YogurtSpawner.Item = Item;
     }
 }

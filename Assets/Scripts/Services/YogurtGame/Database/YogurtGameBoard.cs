@@ -55,7 +55,7 @@ public class YogurtGameBoard : Singleton<YogurtGameBoard>
         // 加载各表数据
         LoadTable<ToppingRuntimeDatabase, ToppingData>();
         // LoadTable<UpgradeData>();
-        LoadTable<YogurtRuntimeDatabase, YogurtDatabase>();
+        LoadTable<YogurtRuntimeDatabase, YogurtData>();
     }
 
     /// <summary>

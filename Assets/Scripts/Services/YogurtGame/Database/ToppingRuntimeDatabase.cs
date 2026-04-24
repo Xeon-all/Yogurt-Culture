@@ -11,7 +11,7 @@ public class ToppingRuntimeDatabase : Database<ToppingData>
         foreach(var item in rows)
             _inventory.Add(
                 item.ID, 
-                new ToppingItem(item as ToppingData)
+                new ToppingItem(item as ToppingData, 10)
             );
     }
 }

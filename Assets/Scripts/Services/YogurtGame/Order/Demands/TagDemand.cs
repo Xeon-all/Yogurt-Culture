@@ -7,7 +7,7 @@ public class TagDemand : IOrderDemand
     public int score;
     public int panelty;
     public YogurtTag demandTag;
-    public int GetScore(YogurtData yogurt)
+    public int GetScore(ProductData yogurt)
     {
         var point = yogurt.GetTagValue(demandTag);
         if(Mathf.Clamp(point, minVal, maxVal) == point)

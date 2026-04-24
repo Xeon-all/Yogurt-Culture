@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class DesktopManager : Singleton<DesktopManager>
 {
-    [SerializeField] private Transform yogurtSlot;
     public GameObject SpawnToppingDragger(ToppingItem item)
     {
         if (item?.Data == null) return null;
@@ -26,9 +25,5 @@ public class DesktopManager : Singleton<DesktopManager>
         var spawners = FindObjectsByType<ToppingSpawner>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach(var s in spawners)
             s.ClearContain();
-    }
-    public void SpawnYogurt(YogurtDatabase item)
-    {
-        
     }
 }

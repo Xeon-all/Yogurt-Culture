@@ -47,7 +47,7 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
         yield return new WaitForSeconds(tooltipDelay);
 
         if (Item?.Data == null) yield break;
-        var tagDatas = YogurtTagSystem.ParseTags((Item.Data as ToppingData).Tags);
+        var tagDatas = Item.Tags;
         if (tagDatas.Count == 0) yield break;
 
         string content = string.Join("\n", tagDatas.ConvertAll(t => $"{t.Tag}({t.Value})"));
