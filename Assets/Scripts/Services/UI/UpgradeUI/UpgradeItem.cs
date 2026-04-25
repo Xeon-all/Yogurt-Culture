@@ -10,12 +10,11 @@ public class UpgradeItem : MonoBehaviour, IPointerClickHandler
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private Image icon;
     [SerializeField] private RectTransform starRoot;
-    [SerializeField] private Sprite empStar;
-    [SerializeField] private Sprite Star;
+    [SerializeField] private GameObject starPrefab;
     public void OnPointerClick(PointerEventData eventData)
     {
-        Debug.Log("UpgradeItem clicked");
         YogurtGameBoard.Instance.UpgradeItem(_item.Data.GetType(), _item.Data.ID);
+        RefreshDisplay();
     }
     public void SetUp<T, T2>(T2 item) 
         where T : TableDataBase
@@ -54,12 +53,11 @@ public class UpgradeItem : MonoBehaviour, IPointerClickHandler
             Destroy(c.gameObject);
         for(int i = 0; i < max; i++)
         {
-            GameObject obj = new GameObject("Image", typeof(RectTransform), typeof(Image));
+            GameObject obj = Instantiate(starPrefab, starRoot);
             if(i < cur)
-                obj.GetComponent<Image>().sprite = Star;
+                obj.GetComponent<StarController>().SetStar();
             else
-                obj.GetComponent<Image>().sprite = empStar;
-            obj.transform.SetParent(starRoot);
+                obj.GetComponent<StarController>().Setempty();
             AspectRatioFitter fitter = obj.AddComponent<AspectRatioFitter>();
             fitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
             fitter.aspectRatio = 1f;

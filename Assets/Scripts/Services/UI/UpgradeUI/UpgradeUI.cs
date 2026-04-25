@@ -25,7 +25,7 @@ public class UpgradeUI : MonoBehaviour
         GetData();
         InstantiateAllItems();
         ShowTopping();
-        _eventBus.Subscribe<OnItemUpgrade>((_) => RefreshDisplay());
+        // _eventBus.Subscribe<OnItemUpgrade>((_) => RefreshDisplay());
     }
     public void ShowUpgradeUI()
     {
