@@ -13,5 +13,7 @@ public class ToppingItem : Itembase<ToppingData>
     {
         IsActive = data.InitActive;
         Tags = YogurtTagSystem.ParseTags(data.Tags);
+        CurLv = 0;
+        MaxLv = data.MaxLv;
     }
 }

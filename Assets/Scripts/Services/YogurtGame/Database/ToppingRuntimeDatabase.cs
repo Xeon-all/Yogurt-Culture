@@ -6,7 +6,7 @@ public class ToppingRuntimeDatabase : Database<ToppingData>
 {
     public override string TableShortName => "Topping";
     public ToppingRuntimeDatabase(TableDataBase[] rows) 
-        : base((ToppingData[])rows) 
+        : base() 
     {
         foreach(var item in rows)
             _inventory.Add(

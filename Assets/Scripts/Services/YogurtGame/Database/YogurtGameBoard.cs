@@ -118,6 +118,12 @@ public class YogurtGameBoard : Singleton<YogurtGameBoard>
         _databaseCache[typeof(T).Name].SetActive(id, true);
     }
 
+    public void UpgradeItem(Type t, string id)
+    {
+        _databaseCache[t.Name].Upgrade(id);
+        _eventBus.Publish(new OnItemUpgrade{type = t, id = id});
+    }
+
     private static class JsonArrayUtility
     {
         [Serializable]
@@ -155,4 +161,9 @@ public struct OnItemRestore
     public Type type;
     public string id;
     public int amount;
+}
+public struct OnItemUpgrade
+{
+    public Type type;
+    public string id;
 }

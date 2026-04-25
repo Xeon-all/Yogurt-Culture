@@ -7,11 +7,12 @@ using UnityEngine;
 public class YogurtItem : Itembase<YogurtData>
 {
     public List<TagData> Tags;
-    // public override YogurtDatabase Data { get ; set ; }
     public YogurtItem(YogurtData data, int initCount = 10)
         :base(data, initCount)
     {
         IsActive = data.InitActive;
         Tags = YogurtTagSystem.ParseTags(data.Tags);
+        CurLv = 0;
+        MaxLv = data.MaxLv;
     }
 }

@@ -436,8 +436,8 @@ namespace UnityEditor
             EditorGUILayout.PropertyField(spCornerSprite);
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(spCornerSize);
-            if (GUI.changed)
-                _tgt.RefreshPositions();
+            // if (GUI.changed)
+            //     _tgt.RefreshPositions();
             EditorGUI.EndChangeCheck();
 
             // ── Bound Constraints ─────────────────────────────────────
@@ -508,11 +508,11 @@ namespace UnityEditor
                     EditorGUILayout.PropertyField(spLabelFontSize);
                     EditorGUILayout.PropertyField(spLabelColor);
                     EditorGUILayout.PropertyField(spLabelMaterial);
-                    if (GUI.changed)
-                    {
-                        _tgt.RefreshLabelStyle();
-                        _tgt.RefreshPositions();
-                    }
+                    // if (GUI.changed)
+                    // {
+                    //     _tgt.RefreshLabelStyle();
+                    //     _tgt.RefreshPositions();
+                    // }
                     EditorGUI.EndChangeCheck();
 
                     EditorGUI.BeginChangeCheck();

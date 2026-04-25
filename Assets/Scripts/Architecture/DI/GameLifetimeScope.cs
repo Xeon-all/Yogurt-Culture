@@ -24,5 +24,6 @@ public class GameLifetimeScope : LifetimeScope
         builder.RegisterComponent(AudioManager.Instance);
         builder.RegisterComponent(YogurtGameBoard.Instance);
         builder.RegisterComponent(FindObjectOfType<PreparationUI>(true));
+        builder.RegisterComponent(FindObjectOfType<UpgradeUI>(true));
     }
 }

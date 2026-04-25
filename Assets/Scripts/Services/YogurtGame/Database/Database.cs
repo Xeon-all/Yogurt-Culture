@@ -10,6 +10,7 @@ public interface IDatabase
     void SetCount(string id, int count);
     int Consume(string id, int amount = 1);
     void Restore(string id, int amount);
+    void Upgrade(string id);
     bool IsAvailable(string id);
     bool GetActive(string id);
     void SetActive(string id, bool isActive);
@@ -21,7 +22,7 @@ public abstract class Database<T> : IDatabase where T : TableDataBase
     protected readonly Dictionary<string, Itembase<T>> _inventory = new();
     
     public abstract string TableShortName { get; }
-    public Database(T[] rows)
+    public Database()
     {
         _inventory = new();
     }
@@ -61,6 +62,13 @@ public abstract class Database<T> : IDatabase where T : TableDataBase
         if (!_inventory.TryGetValue(id, out var item))
             return;
         item.Count += amount;
+    }
+
+    public void Upgrade(string id)
+    {
+        if (!_inventory.TryGetValue(id, out var item))
+            return;
+        item.Upgrade();
     }
 
     public bool IsAvailable(string id)

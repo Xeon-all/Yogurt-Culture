@@ -13,6 +13,7 @@ public class ToppingData : TableDataBase
 	public int Price;
 	public bool InitActive;
 	public string Tags;
+	public int MaxLv;
 	public string DraggerName;
 	public string DraggerSprite;
 	public string ItemIcon;

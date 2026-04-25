@@ -5,7 +5,7 @@ public class YogurtRuntimeDatabase : Database<YogurtData>
 {
     public override string TableShortName => "Yogurt";
     public YogurtRuntimeDatabase(TableDataBase[] rows) 
-        : base((YogurtData[])rows)
+        : base()
     {
         foreach(var item in rows)
             _inventory.Add(
