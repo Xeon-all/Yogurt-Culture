@@ -10,10 +10,10 @@ public class UpgradeUI : MonoBehaviour
 {
     [SerializeField] private GameObject _itemPrefab;
     [SerializeField] private RectTransform _itemRoot;
+    [SerializeField] private GameObject _detailUI;
     private List<ToppingItem> _toppingItemList = new();
     private List<YogurtItem> _yogurtItemList = new();
     private List<GameObject> _itemInstances = new();
-    private object _curList;
     private IEventBus _eventBus;
     [Inject]
     public void Construct(IEventBus eventBus)
@@ -37,12 +37,10 @@ public class UpgradeUI : MonoBehaviour
     }
     public void ShowTopping()
     {
-        _curList = _toppingItemList;
         ShowContent<ToppingData, ToppingItem>(() => _toppingItemList);
     }
     public void ShowYogurt()
     {
-        _curList = _yogurtItemList;
         ShowContent<YogurtData, YogurtItem>(() => _yogurtItemList);
     }
     private void GetData()
@@ -77,7 +75,7 @@ public class UpgradeUI : MonoBehaviour
             if(idx < items.Count)
             {
                 _itemInstances[idx].SetActive(true);
-                _itemInstances[idx].GetComponent<UpgradeItem>().SetUp<T, T2>(item);
+                _itemInstances[idx].GetComponent<UpgradeItem>().SetUp<T, T2>(item, gameObject);
             }
             else
                 _itemInstances[idx].SetActive(false);
@@ -88,5 +86,9 @@ public class UpgradeUI : MonoBehaviour
     {
         foreach(var item in _itemInstances)
             item.GetComponent<UpgradeItem>().RefreshDisplay();
+    }
+    public void ShowDetailUI(IItembase item)
+    {
+        _detailUI.GetComponent<DetailUI>().Show(item);
     }
 }

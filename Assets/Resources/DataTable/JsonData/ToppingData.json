@@ -12,7 +12,7 @@
     "DraggerSprite": "蜂蜜Dragger",
     "ItemIcon": "蜂蜜Icon",
     "GrooveName": "蜂蜜",
-    "Descrip": "默认说明经营",
+    "Descrip": "人类喜欢酸奶，但不喜欢太酸的酸奶，所以要淋上甜蜜的东西。",
     "color": "#FFFFFF"
   },
   {
@@ -28,7 +28,7 @@
     "DraggerSprite": "玉米片Dragger",
     "ItemIcon": "玉米片Icon",
     "GrooveName": "玉米片",
-    "Descrip": "默认说明",
+    "Descrip": "谷物，咀嚼时会发出咔滋声，可以丰富酸奶的口感。",
     "color": "#FFFFFF"
   },
   {
@@ -44,7 +44,7 @@
     "DraggerSprite": "黑巧碎Dragger",
     "ItemIcon": "黑巧碎Icon",
     "GrooveName": "黑巧碎",
-    "Descrip": "默认说明",
+    "Descrip": "好巧，此物在酸奶星亦有记载！",
     "color": "#FFFFFF"
   },
   {
@@ -60,7 +60,7 @@
     "DraggerSprite": "蓝莓Dragger",
     "ItemIcon": "蓝莓Icon",
     "GrooveName": "蓝莓",
-    "Descrip": "默认说明",
+    "Descrip": "镇上的人类幼崽都说，多吃蓝莓能保护眼睛，经检测的确如此。",
     "color": "#FFFFFF"
   },
   {
@@ -76,7 +76,7 @@
     "DraggerSprite": "青苹果Dragger",
     "ItemIcon": "青苹果Icon",
     "GrooveName": "青苹果",
-    "Descrip": "默认说明",
+    "Descrip": "提到青苹果，人们会谈论青春，还会大喊“尽情摇摆”！",
     "color": "#FFFFFF"
   },
   {
@@ -92,7 +92,7 @@
     "DraggerSprite": "焦糖杏仁Dragger",
     "ItemIcon": "焦糖杏仁Icon",
     "GrooveName": "焦糖杏仁",
-    "Descrip": "默认说明",
+    "Descrip": "在糖浆中滚过一圈的坚果，裹上了琥珀色的外壳。",
     "color": "#FFFFFF"
   },
   {
@@ -108,7 +108,7 @@
     "DraggerSprite": "草莓Dragger",
     "ItemIcon": "草莓Icon",
     "GrooveName": "草莓",
-    "Descrip": "默认说明",
+    "Descrip": "把鲜果去除水分制成冻干，这是人类特殊的喜好。",
     "color": "#FFFFFF"
   },
   {
@@ -124,7 +124,7 @@
     "DraggerSprite": "老酸奶Dragger",
     "ItemIcon": "老酸奶Icon",
     "GrooveName": "老酸奶",
-    "Descrip": "默认说明",
+    "Descrip": "发酵得太过认真，差点忘了自己是液体。",
     "color": "#FFFFFF"
   },
   {
@@ -140,7 +140,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "默认说明",
+    "Descrip": "精心制作的糖衣炮弹。先骗过牙齿，再释放酸度。",
     "color": "#FFEE58"
   },
   {
@@ -156,7 +156,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "默认说明",
+    "Descrip": "人类总是把燕麦和早餐联系在一起，或许是因为燕麦散发着太阳晒过的味道。",
     "color": "#558B2F"
   },
   {
@@ -172,7 +172,7 @@
     "DraggerSprite": "",
     "ItemIcon": "",
     "GrooveName": "Default",
-    "Descrip": "默认说明",
+    "Descrip": "能够让酸奶凝固的危险液体，但偏偏人类迷恋它的危险。",
     "color": "#FFEE58"
   }
 ]

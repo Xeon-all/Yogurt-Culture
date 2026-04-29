@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "CursorData", menuName = "Custom/CursorData")]
 public class CursorData : ScriptableObject
 {
-    public enum CursorType { Default, Grab, Dragging }
+    public enum CursorType { Default, Grab, Dragging, Pointer }
     
     [System.Serializable]
     public struct CursorConfig

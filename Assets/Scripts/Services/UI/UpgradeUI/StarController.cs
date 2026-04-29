@@ -21,6 +21,6 @@ public class StarController : MonoBehaviour
     public void Setempty()
     {
         _image.sprite = empStar;
-        _image.material = defaultMat;
+        _image.material = null;
     }
 }
