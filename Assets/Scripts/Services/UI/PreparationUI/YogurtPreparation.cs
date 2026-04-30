@@ -36,6 +36,6 @@ public class YogurtPreparation :
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        YogurtFactory.Instance.YogurtSpawner.Item = Item;
+        YogurtFactory.Instance.YogurtSpawner.SetUp(Item);
     }
 }

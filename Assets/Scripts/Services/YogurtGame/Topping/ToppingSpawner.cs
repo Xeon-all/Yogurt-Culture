@@ -52,7 +52,6 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
 
         string content = string.Join("\n", tagDatas.ConvertAll(t => $"{t.Tag}({t.Value})"));
         TooltipManager.Instance.Show(content, transform, tooltipOffset);
-        Debug.Log("Content Item count : " + Item.Count);
     }
 
     private void CancelAndHideTooltip()
@@ -109,24 +108,10 @@ public class ToppingSpawner : SpawnDragger, IPointerEnterHandler, IPointerExitHa
         if (item?.Data == null) return;
 
         if(GameLoopManager.Instance.CurrentPhase != GamePhase.Preparation) return;
+        if(Item != null)
+            RestoreTopping(Item);
         ApplyVisual(item.Data);
         Item = item;
-
-        Debug.Log($"[ReceiveTopping] id={item.Data.ID}, rawCount={item.Count}");
-
-        // if (GameLoopManager.Instance.CurrentPhase == GamePhase.MorningOp && item.Count > 1)
-        // {
-        //     // int restore = item.Count - 1;
-        //     item.Count = 1;
-        //     YogurtGameBoard.Instance.RestoreTopping(item);
-        //     Debug.Log($"[ReceiveTopping] MorningOp 归还 {item.Count} 个");
-        // }
-
-        // if (GameLoopManager.Instance.CurrentPhase == GamePhase.Preparation)
-        // {
-        //     ApplyVisual(item.Data);
-        //     Item = item;
-        // }
     }
 
     private void ApplyVisual(ToppingData topping)

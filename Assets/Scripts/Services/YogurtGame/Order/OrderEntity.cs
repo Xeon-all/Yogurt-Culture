@@ -106,19 +106,7 @@ public class OrderEntity : MonoBehaviour
     private bool Match(ProductData yogurt) 
     {
         int matchFlavor = CalculateProvidedFlavor(yogurt);
-        // 打印计算详情
-        Debug.Log($"酸奶实际参数: {FormatYogurtTags(yogurt)}\n" +
-                  $"累计需求值（dotProduct）: {matchFlavor}，需求阈值（totalDemandValue）: {orderData.FlavorExpec}，结果: {matchFlavor >= orderData.FlavorExpec}");
-
         return matchFlavor >= orderData.FlavorExpec;
-    }
-
-    private string FormatYogurtTags(ProductData yogurt)
-    {
-        if (yogurt == null) return "(null)";
-        var tags = yogurt.GetTags();
-        if (tags == null || tags.Count == 0) return "无标签";
-        return string.Join(", ", tags.ConvertAll(t => $"{t.Tag}(实际:{t.Value})"));
     }
 
     private IEnumerator DissolveAndDestroy()
