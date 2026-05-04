@@ -14,8 +14,6 @@ public class YogurtData : TableDataBase
 	public bool InitActive;
 	public string Tags;
 	public int MaxLv;
-	public string DraggerName;
-	public string DraggerSprite;
 	public string ItemIcon;
 	public string GrooveName;
 }

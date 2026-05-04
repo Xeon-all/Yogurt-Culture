@@ -8,9 +8,7 @@
     "InitActive": true,
     "Tags": "sour,2;yogurt,2",
     "MaxLv": 3,
-    "DraggerName": "",
-    "DraggerSprite": "",
-    "ItemIcon": "",
-    "GrooveName": ""
+    "ItemIcon": "BaseIcon",
+    "GrooveName": "BaseYogurt"
   }
 ]

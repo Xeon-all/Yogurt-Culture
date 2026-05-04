@@ -14,7 +14,7 @@ public class YogurtSpawner : MonoBehaviour, IPointerClickHandler
     {
         Item = item;
         if(item == null) sr.sprite = null;
-        else sr.sprite = Resources.Load<Sprite>(YogurtGameBoard.YOGURT_SPRITE + item.Data.ItemIcon);
+        else sr.sprite = Resources.Load<Sprite>(YogurtGameBoard.YOGURT_SPRITE + item.Data.GrooveName);
     }
     public void OnPointerClick(PointerEventData eventData)
     {
