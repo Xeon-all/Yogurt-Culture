@@ -13,7 +13,7 @@ Shader "Unlit/MirrorWater"
         _SpeedY ("Speed Y (垂直流速)", Range(-1, 1)) = 0.02
 
         [Header(Sparkle Settings)]
-        _SparkleThreshold ("Sparkle Threshold (波峰阈值)", Range(0.5, 1.0)) = 0.8
+        _SparkleThreshold ("Sparkle Threshold (波峰阈值)", Range(0.4, 1.0)) = 0.8
         _SparkleDensity ("Sparkle Density (闪光点密集度)", Float) = 150.0
         _SparkleSpeed ("Sparkle Twinkle Speed (闪烁速度)", Float) = 5.0
         _SparkleIntensity ("Sparkle Intensity (高光强度)", Float) = 2.0
@@ -47,6 +47,7 @@ Shader "Unlit/MirrorWater"
             
             // --- 新增：声明波纹所需的变量 ---
             sampler2D _NoiseTex;
+            float4 _NoiseTex_ST; 
             float _NoiseScale;
             float _Distortion;
             float _SpeedX;
@@ -72,6 +73,7 @@ Shader "Unlit/MirrorWater"
             fixed4 frag (v2f i) : SV_Target
             {
                 // 1. 翻转原图 UV（你的原逻辑）
+                float2 staticUV = i.uv * _NoiseTex_ST.xy + _NoiseTex_ST.zw;
                 float2 flippedUV = float2(i.uv.x, 1.0 - i.uv.y);
                 
                 // 2. 计算滚动的波纹 UV
@@ -102,9 +104,11 @@ Shader "Unlit/MirrorWater"
                 // float2 gridUV = floor(noiseUV * _SparkleDensity);
                 
                 // 【调用刚刚声明的函数】
-                float randVal = tex2D(_NoiseTex, noiseUV * (_SparkleDensity * 0.05)).r;
+
+                // 2. 用静态 UV 采样光斑，光斑位置就被“钉死”在原地了
+                float randVal = tex2D(_NoiseTex, staticUV * (_SparkleDensity * 0.05)).r;
                 
-                float dotMask = smoothstep(0.7, 1.0, randVal);
+                float dotMask = smoothstep(_SparkleThreshold, 1.0, randVal);
                 float twinkle = sin(_Time.y * _SparkleSpeed + randVal * 100.0) * 0.5 + 0.5;
                 float finalSparkle = peak * dotMask * twinkle * _SparkleIntensity;
 
