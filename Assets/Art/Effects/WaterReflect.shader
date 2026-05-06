@@ -43,6 +43,7 @@ Shader "Unlit/MirrorWater"
             };
 
             sampler2D _MainTex;
+            float4 _MainTex_ST; 
             float _Alpha;
             
             // --- 新增：声明波纹所需的变量 ---
@@ -73,7 +74,7 @@ Shader "Unlit/MirrorWater"
             fixed4 frag (v2f i) : SV_Target
             {
                 // 1. 翻转原图 UV（你的原逻辑）
-                float2 staticUV = i.uv * _NoiseTex_ST.xy + _NoiseTex_ST.zw;
+                float2 staticUV = i.uv * _MainTex_ST.xy + _MainTex_ST.zw;
                 float2 flippedUV = float2(i.uv.x, 1.0 - i.uv.y);
                 
                 // 2. 计算滚动的波纹 UV

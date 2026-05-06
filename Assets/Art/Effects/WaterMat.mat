@@ -40,10 +40,10 @@ Material:
     - _Alpha: 0.51
     - _Distortion: 0.005
     - _NoiseScale: 1
-    - _SparkleDensity: 300
+    - _SparkleDensity: 177.12
     - _SparkleIntensity: 58.3
-    - _SparkleSpeed: 9.2
-    - _SparkleThreshold: 0.605
+    - _SparkleSpeed: 8.16
+    - _SparkleThreshold: 0.6
     - _SpeedX: 0.006
     - _SpeedY: 0.006
     m_Colors: []
