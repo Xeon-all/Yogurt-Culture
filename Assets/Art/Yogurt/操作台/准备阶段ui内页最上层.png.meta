@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -96,10 +113,10 @@ TextureImporter:
       name: "\u51C6\u5907\u9636\u6BB5ui\u5185\u9875\u6700\u4E0A\u5C42_0"
       rect:
         serializedVersion: 2
-        x: 84
-        y: 367
-        width: 1896
-        height: 981
+        x: 6
+        y: 0
+        width: 482
+        height: 241
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -109,48 +126,6 @@ TextureImporter:
       bones: []
       spriteID: 378eb8d0f3e447b41bbd8fa22cc6e145
       internalID: -1771510553
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: "\u51C6\u5907\u9636\u6BB5ui\u5185\u9875\u6700\u4E0A\u5C42_1"
-      rect:
-        serializedVersion: 2
-        x: 1991
-        y: 847
-        width: 9
-        height: 26
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0ceb0dad20391fc4782e4afe57f268af
-      internalID: 582593868
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: "\u51C6\u5907\u9636\u6BB5ui\u5185\u9875\u6700\u4E0A\u5C42_2"
-      rect:
-        serializedVersion: 2
-        x: 1979
-        y: 719
-        width: 14
-        height: 33
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1b187300b360f4b48a3801b6e6adf3b0
-      internalID: 72195712
       vertices: []
       indices: 
       edges: []
@@ -167,11 +142,8 @@ TextureImporter:
     secondaryTextures: []
     nameFileIdTable:
       "\u51C6\u5907\u9636\u6BB5ui\u5185\u9875\u6700\u4E0A\u5C42_0": -1771510553
-      "\u51C6\u5907\u9636\u6BB5ui\u5185\u9875\u6700\u4E0A\u5C42_1": 582593868
-      "\u51C6\u5907\u9636\u6BB5ui\u5185\u9875\u6700\u4E0A\u5C42_2": 72195712
-  spritePackingTag: 
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

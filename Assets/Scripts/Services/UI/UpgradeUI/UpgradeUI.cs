@@ -5,15 +5,18 @@ using System.Linq;
 using VContainer.Unity;
 using System;
 using Excel2Unity;
+using TMPro;
 
 public class UpgradeUI : MonoBehaviour
 {
     [SerializeField] private GameObject _itemPrefab;
     [SerializeField] private RectTransform _itemRoot;
     [SerializeField] private GameObject _detailUI;
+    [SerializeField] private TextMeshProUGUI MoneyTxt;
     private List<ToppingItem> _toppingItemList = new();
     private List<YogurtItem> _yogurtItemList = new();
     private List<GameObject> _itemInstances = new();
+    private bool _initialized = false;
     private IEventBus _eventBus;
     [Inject]
     public void Construct(IEventBus eventBus)
@@ -22,10 +25,13 @@ public class UpgradeUI : MonoBehaviour
     }
     public void OnEnable()
     {
-        GetData();
         InstantiateAllItems();
         ShowTopping();
         // _eventBus.Subscribe<OnItemUpgrade>((_) => RefreshDisplay());
+    }
+    void Update()
+    {
+        MoneyTxt.text = EconomyManager.Instance.Money.ToString();
     }
     public void ShowUpgradeUI()
     {
@@ -54,6 +60,9 @@ public class UpgradeUI : MonoBehaviour
     }
     private void InstantiateAllItems()
     {
+        if(_initialized) return;
+        _initialized = true;
+        GetData();
         foreach (Transform child in _itemRoot)
             Destroy(child.gameObject);
         var count = Mathf.Max(_toppingItemList.Count, _yogurtItemList.Count);

@@ -1,5 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 public class ShopGridGenerator : MonoBehaviour
 {
@@ -49,7 +51,7 @@ public class ShopGridGenerator : MonoBehaviour
         {
             for (int c = 0; c < columnCount; c++)
             {
-                GameObject item = PrefabUtility.InstantiatePrefab(prefab, container) as GameObject;
+                GameObject item = InstantiatePrefab(prefab, container);
 
                 float posX = startPos.x + c * (cellSize.x + spacingX);
                 float posY = startPos.y - r * (cellSize.y + spacingY);
@@ -65,7 +67,6 @@ public class ShopGridGenerator : MonoBehaviour
                 }
 
                 item.name = $"Cell_{r}_{c}";
-                Undo.RegisterCreatedObjectUndo(item, "Generate Shop Grid");
             }
         }
 
@@ -80,7 +81,11 @@ public class ShopGridGenerator : MonoBehaviour
         for (int i = childCount - 1; i >= 0; i--)
         {
             Transform child = container.GetChild(i);
+#if UNITY_EDITOR
             Undo.DestroyObjectImmediate(child.gameObject);
+#else
+            Destroy(child.gameObject);
+#endif
         }
     }
 
@@ -117,7 +122,7 @@ public class ShopGridGenerator : MonoBehaviour
                 int index = r * columnCount + c;
                 if (index >= count) return;
 
-                GameObject item = PrefabUtility.InstantiatePrefab(prefab, container) as GameObject;
+                GameObject item = InstantiatePrefab(prefab, container);
 
                 float posX = startPos.x + c * (cellSize.x + spacingX);
                 float posY = startPos.y - r * (cellSize.y + spacingY);
@@ -133,10 +138,18 @@ public class ShopGridGenerator : MonoBehaviour
                 }
 
                 item.name = $"Cell_{r}_{c}";
-                Undo.RegisterCreatedObjectUndo(item, "Generate Shop Grid");
             }
         }
 
         Debug.Log($"[ShopGridGenerator] Generated {count} cells ({rows} rows x {columnCount} cols).");
+    }
+
+    private static GameObject InstantiatePrefab(GameObject prefab, Transform parent)
+    {
+#if UNITY_EDITOR
+        return PrefabUtility.InstantiatePrefab(prefab, parent) as GameObject;
+#else
+        return Object.Instantiate(prefab, parent);
+#endif
     }
 }

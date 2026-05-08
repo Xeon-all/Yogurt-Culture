@@ -93,46 +93,46 @@ public class CameraManager : MonoBehaviour {
     /// <summary>
     /// 调试控制器：使用WASD移动相机，ZX控制镜头缩放
     /// </summary>
-    public void DebugController() {
-        if (mainCamera == null) return;
+    // public void DebugController() {
+    //     if (mainCamera == null) return;
 
-        // WASD控制相机移动
-        float moveSpeed = 10f; // 移动速度，可以根据需要调整
-        Vector3 moveDirection = Vector3.zero;
+    //     // WASD控制相机移动
+    //     float moveSpeed = 10f; // 移动速度，可以根据需要调整
+    //     Vector3 moveDirection = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.W)) moveDirection += Vector3.up;
-        if (Input.GetKey(KeyCode.S)) moveDirection += Vector3.down;
-        if (Input.GetKey(KeyCode.A)) moveDirection += Vector3.left;
-        if (Input.GetKey(KeyCode.D)) moveDirection += Vector3.right;
+    //     if (Input.GetKey(KeyCode.W)) moveDirection += Vector3.up;
+    //     if (Input.GetKey(KeyCode.S)) moveDirection += Vector3.down;
+    //     if (Input.GetKey(KeyCode.A)) moveDirection += Vector3.left;
+    //     if (Input.GetKey(KeyCode.D)) moveDirection += Vector3.right;
 
-        // 应用移动
-        if (moveDirection != Vector3.zero) {
-            mainCamera.transform.Translate(moveDirection.normalized * moveSpeed * Time.deltaTime, Space.World);
-        }
+    //     // 应用移动
+    //     if (moveDirection != Vector3.zero) {
+    //         mainCamera.transform.Translate(moveDirection.normalized * moveSpeed * Time.deltaTime, Space.World);
+    //     }
 
-        // ZX控制镜头缩放
-        float zoomSpeed = 5f; // 缩放速度
-        float minZoom = 1f;   // 最小正交尺寸
-        float maxZoom = 20f;  // 最大正交尺寸
+    //     // ZX控制镜头缩放
+    //     float zoomSpeed = 5f; // 缩放速度
+    //     float minZoom = 1f;   // 最小正交尺寸
+    //     float maxZoom = 20f;  // 最大正交尺寸
 
-        if (Input.GetKey(KeyCode.Z)) {
-            // Z键放大（缩小视野）
-            mainCamera.orthographicSize = Mathf.Max(minZoom, mainCamera.orthographicSize - zoomSpeed * Time.deltaTime);
-        }
-        if (Input.GetKey(KeyCode.X)) {
-            // X键缩小（放大视野）
-            mainCamera.orthographicSize = Mathf.Min(maxZoom, mainCamera.orthographicSize + zoomSpeed * Time.deltaTime);
-        }
-        if(Input.GetKey(KeyCode.Space)){
-            TransitionToFocus();
-        }
+    //     if (Input.GetKey(KeyCode.Z)) {
+    //         // Z键放大（缩小视野）
+    //         mainCamera.orthographicSize = Mathf.Max(minZoom, mainCamera.orthographicSize - zoomSpeed * Time.deltaTime);
+    //     }
+    //     if (Input.GetKey(KeyCode.X)) {
+    //         // X键缩小（放大视野）
+    //         mainCamera.orthographicSize = Mathf.Min(maxZoom, mainCamera.orthographicSize + zoomSpeed * Time.deltaTime);
+    //     }
+    //     if(Input.GetKey(KeyCode.Space)){
+    //         TransitionToFocus();
+    //     }
 
-        // 检测缩放结束
-        // if (!isZooming && _isZooming) {
-        //     _isZooming = false;
-        //     _initialOrthoSize = mainCamera.orthographicSize;
-        // }
-    }
+    //     // 检测缩放结束
+    //     // if (!isZooming && _isZooming) {
+    //     //     _isZooming = false;
+    //     //     _initialOrthoSize = mainCamera.orthographicSize;
+    //     // }
+    // }
 
     void Start() {
         mainCamera = GetComponent<Camera>();
@@ -144,11 +144,11 @@ public class CameraManager : MonoBehaviour {
 
         _cameraStartPos = mainCamera.transform.position;
 
-        // 记录所有图层的初始位置和缩放
-        foreach (var layer in layers) {
-            _layerStartPositions.Add(layer.layerRoot.position);
-            _layerStartScales.Add(layer.layerRoot.localScale);
-        }
+        // // 记录所有图层的初始位置和缩放
+        // foreach (var layer in layers) {
+        //     _layerStartPositions.Add(layer.layerRoot.position);
+        //     _layerStartScales.Add(layer.layerRoot.localScale);
+        // }
     }
 
     void Update() {
@@ -156,21 +156,21 @@ public class CameraManager : MonoBehaviour {
         // DebugController();
     }
 
-    void LateUpdate() { // 使用 LateUpdate 确保在相机移动后更新图层
-        Vector3 cameraDelta = mainCamera.transform.position - _cameraStartPos;
+    // void LateUpdate() { // 使用 LateUpdate 确保在相机移动后更新图层
+    //     Vector3 cameraDelta = mainCamera.transform.position - _cameraStartPos;
 
-        for (int i = 0; i < layers.Count; i++) {
-            if (layers[i].layerRoot == null) continue;
+    //     for (int i = 0; i < layers.Count; i++) {
+    //         if (layers[i].layerRoot == null) continue;
 
-            // 基准位置 = 初始位置 + 相机移动偏移（XY分别应用不同的跟随因子）
-            Vector3 basePos = _layerStartPositions[i];
-            basePos.x += cameraDelta.x * layers[i].FactorX;
-            basePos.y += cameraDelta.y * layers[i].FactorY;
+    //         // 基准位置 = 初始位置 + 相机移动偏移（XY分别应用不同的跟随因子）
+    //         Vector3 basePos = _layerStartPositions[i];
+    //         basePos.x += cameraDelta.x * layers[i].FactorX;
+    //         basePos.y += cameraDelta.y * layers[i].FactorY;
 
-            // 保持 Z 轴不变
-            basePos.z = _layerStartPositions[i].z;
-            layers[i].layerRoot.position = basePos;
-        }
-    }
+    //         // 保持 Z 轴不变
+    //         basePos.z = _layerStartPositions[i].z;
+    //         layers[i].layerRoot.position = basePos;
+    //     }
+    // }
 
 }
