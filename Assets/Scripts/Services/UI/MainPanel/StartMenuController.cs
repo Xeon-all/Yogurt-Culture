@@ -1,5 +1,7 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class StartMenuController : MonoBehaviour {
     [Header("UI")]
@@ -11,6 +13,8 @@ public class StartMenuController : MonoBehaviour {
     [SerializeField] private string loadingSceneName = "Loading";
     [Tooltip("当 loadingSceneName 为空时使用的 buildIndex。")]
     [SerializeField] private int loadingSceneBuildIndex = -1;
+    [SerializeField] private VideoPlayer player;
+    [SerializeField] private GameObject screen;
 
     private void Reset() {
         var buttons = GetComponentsInChildren<Button>(true);
@@ -29,8 +33,15 @@ public class StartMenuController : MonoBehaviour {
         if (startButton != null) startButton.onClick.RemoveListener(OnClickStart);
         if (quitButton != null) quitButton.onClick.RemoveListener(OnClickQuit);
     }
-
-    public void OnClickStart() {
+    public void OnClickStart()
+    {
+        StartCoroutine(_OnClickStart());
+    }
+    public IEnumerator _OnClickStart() {
+        screen.SetActive(true);
+        player.time = 0;
+        player.Play();
+        yield return new WaitForSecondsRealtime(27f);
         SceneLoadHelper.LoadScene(loadingSceneName, loadingSceneBuildIndex);
     }
 
