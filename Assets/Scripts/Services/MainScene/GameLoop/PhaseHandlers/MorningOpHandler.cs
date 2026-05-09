@@ -24,8 +24,11 @@ public class MorningOpHandler : PhaseHandlerBase
         data.todayLevelUps = 0;
 
         OrderManager.Instance.OnOrderCompleted += OnOrderCompleted;
-
         OrderManager.Instance.StartOrder();
+
+        _game.npcManager.SetActive(true);
+        _game.yogurtCart.GetComponent<Animator>().enabled = true;
+        _game.yogurtCart.GetComponent<Animator>().Play("OpAnim");
     }
 
     public override void OnPhaseUpdate(GameLoopData data, float deltaTime)
@@ -47,6 +50,8 @@ public class MorningOpHandler : PhaseHandlerBase
         manager.SetActive(false);
 
         _data = null;
+        _game.yogurtCart.GetComponent<Animator>().enabled = false;
+        _game.yogurtCart.GetComponent<SpriteRenderer>().sprite = _game.yogurtCartIdle;
     }
 
     private void OnOrderCompleted(OrderResult result)

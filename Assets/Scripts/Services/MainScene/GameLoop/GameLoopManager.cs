@@ -50,6 +50,8 @@ namespace YogurtCulture.GameLoop
         [SerializeField] public List<UnityEvent> preparationAction;
         [Header("经营阶段")]
         [SerializeField] public GameObject npcManager;
+        [SerializeField] public GameObject yogurtCart;
+        [SerializeField] public Sprite yogurtCartIdle;
         [Header("结算阶段")]
         [SerializeField] private GameObject settlementUI;
         [SerializeField] private TextMeshProUGUI settlementDayText;

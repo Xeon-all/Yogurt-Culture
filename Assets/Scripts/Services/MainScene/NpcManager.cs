@@ -18,9 +18,7 @@ public class NpcManager : Singleton<NpcManager>
     [SerializeField] private Transform npcRoot;
     [SerializeField] private string npcRootName = "NPC";
     
-    [Header("Y轴可视化范围")]
-    [SerializeField] private Transform minYMarker;
-    [SerializeField] private Transform maxYMarker;
+    [Header("Y轴可视化范围")]   
     [SerializeField] private float fallbackMinY = -2f;
     [SerializeField] private float fallbackMaxY = 2f;
 
@@ -57,7 +55,10 @@ public class NpcManager : Singleton<NpcManager>
         
         spawnRoutine = StartCoroutine(SpawnRoutine());
     }
-    
+    private void OnEnable()
+    {
+        spawnRoutine = StartCoroutine(SpawnRoutine());
+    }    
     private void OnDisable()
     {
         if (spawnRoutine != null)
@@ -89,7 +90,6 @@ public class NpcManager : Singleton<NpcManager>
             return;
         }
         
-        EnsureCamera();
         if (mainCamera == null)
         {
             return;
@@ -102,7 +102,7 @@ public class NpcManager : Singleton<NpcManager>
         }
         
         // 所有NPC都从左侧生成
-        bool spawnLeft = true;
+        bool spawnLeft = Random.value > 0.5f;
         float spawnY = GetRandomY();
         Vector3 spawnPos = GetSpawnPosition(spawnLeft);
         spawnPos.y = spawnY;
@@ -215,7 +215,6 @@ public class NpcManager : Singleton<NpcManager>
     }
     private void RecycleOffScreenNpcs()
     {
-        EnsureCamera();
         if (mainCamera == null || activeNpcs.Count == 0)
         {
             return;
@@ -244,18 +243,6 @@ public class NpcManager : Singleton<NpcManager>
         }
     }
     
-    private void EnsureCamera()
-    {
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-            if (mainCamera == null)
-            {
-                // Debug.LogWarning("NpcManager: 找不到主摄像机。");
-            }
-        }
-    }
-    
     private void EnsureNpcRoot()
     {
         if (npcRoot == null)
@@ -271,7 +258,6 @@ public class NpcManager : Singleton<NpcManager>
     
     private Vector3 GetSpawnPosition(bool spawnLeft)
     {
-        EnsureCamera();
         if (mainCamera == null)
         {
             return Vector3.zero;
@@ -299,8 +285,8 @@ public class NpcManager : Singleton<NpcManager>
     
     private float GetRandomY()
     {
-        float minY = minYMarker ? minYMarker.position.y : fallbackMinY;
-        float maxY = maxYMarker ? maxYMarker.position.y : fallbackMaxY;
+        float minY = fallbackMinY;
+        float maxY = fallbackMaxY;
         if (minY > maxY)
         {
             float temp = minY;
@@ -313,8 +299,8 @@ public class NpcManager : Singleton<NpcManager>
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
-        float minY = minYMarker ? minYMarker.position.y : fallbackMinY;
-        float maxY = maxYMarker ? maxYMarker.position.y : fallbackMaxY;
+        float minY = fallbackMinY;
+        float maxY = fallbackMaxY;
         Vector3 center = transform.position;
         Gizmos.DrawLine(new Vector3(center.x - 10f, minY, 0f), new Vector3(center.x + 10f, minY, 0f));
         Gizmos.DrawLine(new Vector3(center.x - 10f, maxY, 0f), new Vector3(center.x + 10f, maxY, 0f));

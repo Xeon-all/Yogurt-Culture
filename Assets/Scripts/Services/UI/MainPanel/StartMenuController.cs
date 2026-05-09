@@ -41,7 +41,8 @@ public class StartMenuController : MonoBehaviour {
         screen.SetActive(true);
         player.time = 0;
         player.Play();
-        yield return new WaitForSecondsRealtime(27f);
+        while(player.isPlaying)
+            yield return null;
         SceneLoadHelper.LoadScene(loadingSceneName, loadingSceneBuildIndex);
     }
 
